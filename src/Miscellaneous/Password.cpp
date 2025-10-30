@@ -6,8 +6,8 @@
 */
 
 #include "Miscellaneous/Password.hpp"
-#include "Exception/Generic.hpp"
 #include "Miscellaneous/Utils.hpp"
+#include "Exception/Generic.hpp"
 #include "Variables.hpp"
 
 #include <openssl/rand.h>
@@ -16,9 +16,9 @@
 
 std::string Misc::Password::HashPassword(const std::string& password)
 {
-    std::vector<uint8_t> salt(CRYPTION_SALT_LENGTH);
 
-    if (!RAND_bytes(salt.data(), salt.size())) {
+    std::vector<uint8_t> salt(CRYPTION_SALT_LENGTH);
+    if (!RAND_bytes(salt.data(), static_cast<std::int32_t>(salt.size()))) {
         throw Exception::GenericError("Failed to generate random salt for password hashing");
     }
 

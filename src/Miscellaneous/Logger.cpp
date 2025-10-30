@@ -6,6 +6,7 @@
 */
 
 #include "Miscellaneous/Logger.hpp"
+#include "Exception/Generic.hpp"
 
 #include <iostream>
 #include <iomanip>

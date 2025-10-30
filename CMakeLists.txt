@@ -13,6 +13,7 @@ file(GLOB_RECURSE SRC CONFIGURE_DEPENDS src/*.cpp)
 find_package(libconfig CONFIG REQUIRED)
 find_package(libpqxx CONFIG REQUIRED)
 find_package(Lua 5.4 REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 find_path(SOL2_INCLUDE_DIR "sol/abort.hpp")
 
@@ -34,4 +35,4 @@ else()
     message(FATAL_ERROR "Could not find a valid libconfig target")
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBCONFIG_LIBRARIES} ${LUA_LIBRARIES} libpqxx::pqxx)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBCONFIG_LIBRARIES} ${LUA_LIBRARIES} OpenSSL::Crypto libpqxx::pqxx)

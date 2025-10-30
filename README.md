@@ -1,6 +1,6 @@
 # My Game Server
 
-This is the server part of the 3rd year project R-Type for Epitech. We were in group of 4 students, I have worked on the server part of the project and the rest of the team worked on the client part.
+This is the server part of the 3rd year project R-Type for Epitech. We were in group of 4 students, I have worked on the server part of the project and the rest of the team worked on the client part. The server work on Linux, MacOS and Windows.
 
 <div style="text-align:center"><img src="assets/title-screen.gif" alt="Server Title" width="600" /></div>
 

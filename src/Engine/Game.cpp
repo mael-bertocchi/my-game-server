@@ -24,6 +24,20 @@
 #include <memory>
 #include <tuple>
 
+/**
+ * Prevent Windows from defining min and max macros that interfere with min and max
+ */
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif
+
+/**
+ * Prevent Windows from defining max macro that interferes with max functionality
+ */
+#ifdef max
+    #undef max
+#endif
+
 Engine::Game::Game() : _ids({0}), _wave(nullptr), _id(Misc::Utils::GetNextId("game")), _inactive(false), _started(false)
 {
     _clocks = {
@@ -608,7 +622,7 @@ std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetItems(const Item typ
         case Item::Force:
             return _items.force;
         default:
-            break;
+            throw Exception::GenericError(std::format("Invalid item type, got {}", Misc::Utils::GetEnumIndex(type)));
     }
 }
 
