@@ -283,17 +283,34 @@ bool Network::Player::IsStatisticGone(const Statistic& statistic) const
     if (_god) {
         return false;
     }
-    return _statistics.at(statistic).first.HasElapsed(PLAYER_STATISTIC_DURATION_MS);
+    const bool elapsed = _statistics.at(statistic).first.HasElapsed(PLAYER_STATISTIC_DURATION_MS);
+
+    if (elapsed) {
+        Misc::Logger::Log(std::format("{} statistic expired for player {}", StatisticToString(statistic), _id));
+    }
+    return elapsed;
 }
 
 const std::string Network::Player::StatisticToString(const Statistic& statistic) const
 {
     switch (statistic) {
         case Statistic::Shield:
-            return "Shield";
+            return "shield";
         case Statistic::Force:
-            return "Force";
+            return "force";
         default:
-            return "Unknown";
+            return "unknown";
+    }
+}
+
+const std::string Network::Player::RoleToString(const Role& role) const
+{
+    switch (role) {
+        case Role::Administrator:
+            return "administrator";
+        case Role::Player:
+            return "player";
+        default:
+            return "unknown";
     }
 }

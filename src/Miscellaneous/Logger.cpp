@@ -11,25 +11,25 @@
 #include <iomanip>
 #include <chrono>
 
-Misc::Logger::Logger() : _enabled(false) {}
+Misc::Logger::Logger() : _verbosity(Verbosity::None) {}
 
-void Misc::Logger::SetDebugMode(bool enable)
+void Misc::Logger::SetVerbosity(Verbosity level)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    _enabled = enable;
+    _verbosity = level;
 }
 
-bool Misc::Logger::IsDebugEnabled() const
+Misc::Logger::Verbosity Misc::Logger::GetVerbosity() const
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    return _enabled;
+    return _verbosity;
 }
 
 void Misc::Logger::WriteLogEntry(const std::string& message, const LogLevel level)
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
-    if (_enabled) {
+    if (_verbosity != Verbosity::None) {
         auto currentTimePoint = std::chrono::system_clock::now();
         auto timeT = std::chrono::system_clock::to_time_t(currentTimePoint);
 
@@ -47,6 +47,11 @@ void Misc::Logger::WriteLogEntry(const std::string& message, const LogLevel leve
         switch (level) {
             case LogLevel::Default:
                 std::cerr << "\r[" << std::put_time(localTimeInfo, "%Y-%m-%d %H:%M:%S") << "] \033[0;32m>\033[0;0m " << message << std::endl;
+                break;
+            case LogLevel::Network:
+                if (_verbosity != Verbosity::Default) {
+                    std::cerr << "\r[" << std::put_time(localTimeInfo, "%Y-%m-%d %H:%M:%S") << "] \033[0;32m>\033[0;0m " << message << std::endl;
+                }
                 break;
             case LogLevel::Caution:
                 std::cout << "\r[" << std::put_time(localTimeInfo, "%Y-%m-%d %H:%M:%S") << "] \033[0;33m>\033[0;0m " << message << std::endl;

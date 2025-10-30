@@ -35,7 +35,15 @@ namespace Misc
              * @param delimiter The character used to split the string (default is space).
              * @return A vector containing the split substrings.
              */
-            static std::vector<std::string> Split(const std::string& str, char delimiter = ' ');
+            static const std::vector<std::string> SplitStr(const std::string& str, char delimiter = ' ');
+
+            /**
+             * @brief Convert a string to lowercase
+             *
+             * @param str The input string
+             * @return The lowercase version of the string
+             */
+            static const std::string ToLower(const std::string& str);
 
             /**
              * @brief Get the value of an option from a list of arguments

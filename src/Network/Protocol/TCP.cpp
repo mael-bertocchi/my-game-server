@@ -47,7 +47,7 @@ bool Network::Protocol::TCP::ReceiveMessage(const Wrapper::Socket::SocketType so
     std::optional<std::uint32_t> id = Storage::Cache::Player::GetInstance().GetPlayerIdBySocket(socket);
 
     if (id.has_value()) {
-        Misc::Logger::Log(std::format("Received message from player {}: {} {}", id.value(), Misc::Utils::BytesToHex(content), Misc::Utils::BytesToHex(body)));
+        Misc::Logger::Log(std::format("Received message from player {}: {} {}", id.value(), Misc::Utils::BytesToHex(content), Misc::Utils::BytesToHex(body)), Misc::Logger::LogLevel::Network);
         Action::Dispatcher::ReceiveMessage(header.type, id.value(), body);
         return false;
     } else {
@@ -81,7 +81,7 @@ void Network::Protocol::TCP::SendMessage(const Wrapper::Socket::SocketType socke
                 if (Wrapper::Socket::Send(socket, serialized) < 0) {
                     Misc::Logger::Log(std::format("Failed to send message to player {}: {}", id.value(), Wrapper::Socket::GetLastError()), Misc::Logger::LogLevel::Critical);
                 } else {
-                    Misc::Logger::Log(std::format("Sent message to player {}: {} {}", id.value(), Misc::Utils::BytesToHex(header), Misc::Utils::BytesToHex(message.body)));
+                    Misc::Logger::Log(std::format("Sent message to player {}: {} {}", id.value(), Misc::Utils::BytesToHex(header), Misc::Utils::BytesToHex(message.body)), Misc::Logger::LogLevel::Network);
                 }
             }
         }

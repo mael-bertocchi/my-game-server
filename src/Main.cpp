@@ -135,7 +135,13 @@ std::int32_t main(std::int32_t argc, char **argv)
             std::string file = Misc::Utils::GetTextOption(argv, argv + argc, "--file");
 
             if (Misc::Utils::HasOption(argv, argv + argc, "--debug")) {
-                Misc::Logger::GetInstance().SetDebugMode(true);
+                std::string level = Misc::Utils::GetTextOption(argv, argv + argc, "--debug");
+
+                if (level != "network") {
+                    Misc::Logger::GetInstance().SetVerbosity(Misc::Logger::Verbosity::Default);
+                } else {
+                    Misc::Logger::GetInstance().SetVerbosity(Misc::Logger::Verbosity::Network);
+                }
             }
 
             Misc::Env::GetInstance().LoadFromFile(file);

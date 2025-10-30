@@ -216,6 +216,14 @@ namespace Network
              */
             const std::string StatisticToString(const Statistic& statistic) const;
 
+            /**
+             * @brief Convert a Role enum to its string representation
+             *
+             * @param role The role to convert
+             * @return The string representation of the role
+             */
+            const std::string RoleToString(const Role& role) const;
+
             mutable std::mutex _tcpMutex; /*!< Mutex to protect transmission control protocol message queue */
             mutable std::mutex _udpMutex; /*!< Mutex to protect user datagram protocol message queue */
 

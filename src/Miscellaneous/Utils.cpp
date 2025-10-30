@@ -19,7 +19,7 @@
 #include <format>
 #include <mutex>
 
-std::vector<std::string> Misc::Utils::Split(const std::string& str, char delimiter)
+const std::vector<std::string> Misc::Utils::SplitStr(const std::string& str, char delimiter)
 {
     std::vector<std::string> words {};
     std::stringstream stream(str);
@@ -29,6 +29,16 @@ std::vector<std::string> Misc::Utils::Split(const std::string& str, char delimit
         words.push_back(word);
     }
     return words;
+}
+
+const std::string Misc::Utils::ToLower(const std::string& str)
+{
+    std::string result = str;
+
+    std::transform(result.begin(), result.end(), result.begin(), [](std::uint8_t c) {
+        return std::tolower(c);
+    });
+    return result;
 }
 
 const std::string Misc::Utils::GetTextOption(char **begin, char **end, const std::string& name)

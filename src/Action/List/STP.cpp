@@ -36,3 +36,15 @@ void Action::List::STP::SendMessage(const std::uint32_t id, const std::any& cont
         Misc::Logger::Log(std::format("Failed to send STP to player {}", id), Misc::Logger::LogLevel::Critical);
     }
 }
+
+const std::string Action::List::STP::ResultToString(const Result result)
+{
+    switch (result) {
+        case Result::Lose:
+            return "lose";
+        case Result::Win:
+            return "win";
+        default:
+            throw "unknown";
+    }
+}

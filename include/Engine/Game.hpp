@@ -292,6 +292,38 @@ namespace Engine
             };
 
             /**
+             * @brief Convert a Missile enum value to its string representation
+             *
+             * @param type The Missile enum value to convert
+             * @return The string representation of the Missile type
+             */
+            const std::string MissileToString(const Missile type) const;
+
+            /**
+             * @brief Convert an Enemy enum value to its string representation
+             *
+             * @param type The Enemy enum value to convert
+             * @return The string representation of the Enemy type
+             */
+            const std::string EnemyToString(const Enemy type) const;
+
+            /**
+             * @brief Convert an Item enum value to its string representation
+             *
+             * @param type The Item enum value to convert
+             * @return The string representation of the Item type
+             */
+            const std::string ItemToString(const Item type) const;
+
+            /**
+             * @brief Convert a Character enum value to its string representation
+             *
+             * @param type The Character enum value to convert
+             * @return The string representation of the Character type
+             */
+            const std::string CharacterToString(const Character type) const;
+
+            /**
              * @brief Broadcast a player's statistic change to all players in the game
              *
              * @param id The unique identifier of the player

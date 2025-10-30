@@ -36,7 +36,7 @@ void Network::Protocol::UDP::ReceiveMessage()
 
         if (player) {
             Action::Dispatcher::ReceiveMessage(type, player->GetId(), payload);
-            Misc::Logger::Log(std::format("Received message from player {}: {}", player->GetId(), Misc::Utils::BytesToHex(payload)));
+            Misc::Logger::Log(std::format("Received message from player {}: {}", player->GetId(), Misc::Utils::BytesToHex(payload)), Misc::Logger::LogLevel::Network);
         }
     }
 }
@@ -64,7 +64,7 @@ void Network::Protocol::UDP::SendMessage(const Wrapper::Socket::SocketType socke
             if (Wrapper::Socket::SendTo(_socket, content, address, port) < 0) {
                 Misc::Logger::Log(std::format("Failed to send message to player {}: {}", player->GetId(), Wrapper::Socket::GetLastError()), Misc::Logger::LogLevel::Critical);
             } else {
-                Misc::Logger::Log(std::format("Sent message to player {}: {}", player->GetId(), Misc::Utils::BytesToHex(content)));
+                Misc::Logger::Log(std::format("Sent message to player {}: {}", player->GetId(), Misc::Utils::BytesToHex(content)), Misc::Logger::LogLevel::Network);
             }
         }
     }

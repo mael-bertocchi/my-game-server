@@ -31,12 +31,12 @@ Engine::Game::Game() : _ids({0}), _wave(nullptr), _id(Misc::Utils::GetNextId("ga
         { TimedEvent::Wave, Misc::Clock() },
         { TimedEvent::Move, Misc::Clock() }
     };
-    Misc::Logger::Log(std::format("Game {} created", _id));
+    Misc::Logger::Log(std::format("[Game — {}] Created", _id));
 }
 
 Engine::Game::~Game()
 {
-    Misc::Logger::Log(std::format("Game {} destroyed", _id));
+    Misc::Logger::Log(std::format("[Game — {}] Destroyed", _id));
 }
 
 std::uint32_t Engine::Game::GetId() const
@@ -59,7 +59,7 @@ bool Engine::Game::AddPlayerId(const std::uint32_t id)
             player->SetPlaying(true);
             player->SetAlive(true);
 
-            Misc::Logger::Log(std::format("Player {} added to game {} at slot {}", id, _id, slot));
+            Misc::Logger::Log(std::format("[Game — {}] Player {} added at slot {}", _id, id, slot));
 
             for (const std::uint32_t& current : _ids) {
                 if (current != 0) {
@@ -94,7 +94,7 @@ bool Engine::Game::RemovePlayerId(const std::uint32_t id)
         }
         _ids[slot] = 0;
 
-        Misc::Logger::Log(std::format("Player {} removed from game {}", id, _id));
+        Misc::Logger::Log(std::format("[Game — {}] Player {} removed", _id, id));
         return true;
     } else {
         return false;
@@ -110,6 +110,7 @@ bool Engine::Game::KillPlayerId(const std::uint32_t id)
             player->SetAlive(false);
         }
 
+        Misc::Logger::Log(std::format("[Game — {}] Player {} killed", _id, id));
         for (const std::uint32_t& current : _ids) {
             if (current != 0) {
                 Action::Dispatcher::SendMessage(ActionType::DIE, current, std::make_pair(id, Misc::Utils::GetEnumIndex(Character::Player)));
@@ -250,7 +251,7 @@ bool Engine::Game::IsInactive()
         return false;
     }
     if (_clocks.at(TimedEvent::Inactivity).HasElapsed(GAME_INACTIVITY_TIMEOUT_MS)) {
-        Misc::Logger::Log(std::format("Game {} marked as inactive", _id));
+        Misc::Logger::Log(std::format("[Game — {}] Inactivity timeout reached", _id));
         return true;
     }
     return false;
@@ -343,6 +344,7 @@ void Engine::Game::Start()
                 }
             }
         }
+        Misc::Logger::Log(std::format("[Game — {}] Started with {} players", _id, positions.size()));
         for (const auto& position : positions) {
             Action::Dispatcher::SendMessage(ActionType::STR, position.first, positions);
         }
@@ -364,6 +366,7 @@ void Engine::Game::Stop()
                 }
             }
         }
+        Misc::Logger::Log(std::format("[Game — {}] Stoped, players {}", _id, Action::List::STP::ResultToString(result)));
         for (const std::uint32_t& current : _ids) {
             if (current != 0) {
                 Action::Dispatcher::SendMessage(ActionType::STP, current, result);
@@ -491,7 +494,6 @@ std::uint32_t Engine::Game::CreateEnemy(const Position position, const Enemy typ
             Action::Dispatcher::SendMessage(ActionType::SPW, current, std::make_tuple(enemy.id, Misc::Utils::GetEnumIndex(type), enemy.position));
         }
     }
-
     return enemy.id;
 }
 
@@ -606,7 +608,7 @@ std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetItems(const Item typ
         case Item::Force:
             return _items.force;
         default:
-            throw Exception::GenericError(std::format("Invalid item type, got {}", Misc::Utils::GetEnumIndex(type)));
+            break;
     }
 }
 
@@ -635,7 +637,7 @@ std::uint32_t Engine::Game::CreateItem(const Position position, const Item type)
             _items.force[item.id] = item;
             break;
         default:
-            throw Exception::GenericError(std::format("Invalid item type, got {}", Misc::Utils::GetEnumIndex(type)));
+            break;
     }
     for (const std::uint32_t& current : _ids) {
         if (current != 0) {
@@ -684,5 +686,55 @@ void Engine::Game::SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& 
                 Action::Dispatcher::SendMessage(ActionType::STS, current, std::make_tuple(player->GetId(), statistic, status));
             }
         }
+    }
+}
+
+const std::string Engine::Game::MissileToString(const Missile type) const
+{
+    switch (type) {
+        case Missile::Player:
+            return "player";
+        case Missile::Enemy:
+            return "enemy";
+        case Missile::Force:
+            return "force";
+        default:
+            return "unknown";
+    }
+}
+
+const std::string Engine::Game::EnemyToString(const Enemy type) const
+{
+    switch (type) {
+        case Enemy::Generic:
+            return "generic";
+        case Enemy::Walking:
+            return "walking";
+        case Enemy::Flying:
+            return "flying";
+        default:
+            return "unknown";
+    }
+}
+
+const std::string Engine::Game::ItemToString(const Item type) const
+{
+    switch (type) {
+        case Item::Shield:
+            return "shield";
+        case Item::Force:
+            return "force";
+        default:
+            return "unknown";
+    }
+}
+
+const std::string Engine::Game::CharacterToString(const Character type) const
+{
+    switch (type) {
+        case Character::Player:
+            return "player";
+        default:
+            return "unknown";
     }
 }

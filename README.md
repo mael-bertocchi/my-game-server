@@ -58,7 +58,10 @@ You can run the server with the following command, providing a path to your conf
 ./r-type_server --file path/to/your/config.cfg [--debug]
 ```
 
-The `--debug` flag is optional and can be used to enable debug mode.
+The `--debug` option is optional and can be used to enable logging with different verbosity levels:
+
+- `--debug default`: Logs all events except network requests
+- `--debug network`: Logs all events including network requests
 
 ------
 

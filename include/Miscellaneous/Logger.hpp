@@ -32,22 +32,33 @@ namespace Misc
             enum class LogLevel {
                 Critical = 0, /*!< Error log level */
                 Default = 1, /*!< Informational log level */
-                Caution = 2 /*!< Warning log level */
+                Caution = 2, /*!< Warning log level */
+                Network = 3 /*!< Network request log level */
             };
 
             /**
-             * @brief Enable or disable debug mode
-             *
-             * @param enable True to enable debug mode, false to disable
+             * @enum Verbosity
+             * @brief Represents the verbosity level of logging.
              */
-            void SetDebugMode(bool enable);
+            enum class Verbosity {
+                None = 0, /*!< No logging */
+                Default = 1, /*!< Log everything except network requests */
+                Network = 2 /*!< Log everything including network requests */
+            };
 
             /**
-             * @brief Check if debug mode is enabled
+             * @brief Set the logging verbosity level
              *
-             * @return True if debug mode is enabled, false otherwise
+             * @param level The verbosity level to set
              */
-            bool IsDebugEnabled() const;
+            void SetVerbosity(Verbosity level);
+
+            /**
+             * @brief Get the current logging verbosity level
+             *
+             * @return The current verbosity level
+             */
+            Verbosity GetVerbosity() const;
 
             /**
              * @brief WriteLogEntry a message with a timestamp
@@ -77,6 +88,7 @@ namespace Misc
             friend class Singleton<Logger>;
 
             mutable std::mutex _mutex; /*!< Mutex for thread-safe logging */
-            bool _enabled = false; /*!< Debug mode flag */
+
+            Verbosity _verbosity; /*!< Logging verbosity level */
     };
 }

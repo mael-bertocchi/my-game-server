@@ -27,7 +27,7 @@ void Action::List::DFY::ReceiveMessage(const std::uint32_t id, const std::vector
         }
 
         const std::string content(body.begin(), body.end());
-        const std::vector<std::string> parts = Misc::Utils::Split(content);
+        const std::vector<std::string> parts = Misc::Utils::SplitStr(content);
 
         if (parts.size() != 2) {
             throw Exception::GenericError(std::format("Expected username and password separated by space, got {}", parts.size()));

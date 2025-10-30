@@ -38,5 +38,13 @@ namespace Action::List
              * @param content The content to be sent
              */
             void SendMessage(const std::uint32_t id, const std::any& content) const override;
+
+            /**
+             * @brief Convert Result enum to string representation
+             *
+             * @param result The result enum value
+             * @return The string representation of the result
+             */
+            static const std::string ResultToString(const Result result);
     };
 }
