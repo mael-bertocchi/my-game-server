@@ -6,7 +6,6 @@
 */
 
 #include "Engine/Collision.hpp"
-#include "Network/Player.hpp"
 #include "Storage/Player.hpp"
 #include "Variables.hpp"
 
@@ -30,7 +29,7 @@ Engine::Collision::Result Engine::Collision::Check(const std::array<std::uint32_
             auto player = Storage::Cache::Player::GetInstance().GetPlayerById(id);
             if (player && player->IsAlive()) {
                 playerBoxes[id] = CreateBoundingBox(player->GetPosition(), 82, 70);
-                if (!player->IsStatisticActive(Network::Player::Statistic::Shield)) {
+                if (!player->IsStatisticActive(Statistic::Shield)) {
                     playerShieldBoxes[id] = playerBoxes[id];
                 }
             }
@@ -81,6 +80,24 @@ Engine::Collision::Result Engine::Collision::Check(const std::array<std::uint32_
 
             if (DoesCollide(pmBox, emBox)) {
                 result.missiles.player.insert(pmId);
+                result.missiles.enemy.insert(emId);
+                break;
+            }
+        }
+    }
+
+    for (const auto& [pfmId, pfmBox] : forceMissileBoxes) {
+        if (result.missiles.force.count(pfmId)) {
+            continue;
+        }
+
+        for (const auto& [emId, emBox] : enemyMissileBoxes) {
+            if (result.missiles.enemy.count(emId)) {
+                continue;
+            }
+
+            if (DoesCollide(pfmBox, emBox)) {
+                result.missiles.force.insert(pfmId);
                 result.missiles.enemy.insert(emId);
                 break;
             }

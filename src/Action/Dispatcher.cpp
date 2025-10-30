@@ -12,6 +12,7 @@
 #include "Action/List/ERR.hpp"
 #include "Action/List/JON.hpp"
 #include "Action/List/LVE.hpp"
+#include "Action/List/NXT.hpp"
 #include "Action/List/OVE.hpp"
 #include "Action/List/POS.hpp"
 #include "Action/List/STS.hpp"
@@ -49,6 +50,7 @@ Action::IAction* Action::Dispatcher::GetAction(const ActionType type)
         elements[ActionType::ERR] = std::make_unique<Action::List::ERR>();
         elements[ActionType::JON] = std::make_unique<Action::List::JON>();
         elements[ActionType::LVE] = std::make_unique<Action::List::LVE>();
+        elements[ActionType::NXT] = std::make_unique<Action::List::NXT>();
         elements[ActionType::OVE] = std::make_unique<Action::List::OVE>();
         elements[ActionType::POS] = std::make_unique<Action::List::POS>();
         elements[ActionType::STS] = std::make_unique<Action::List::STS>();

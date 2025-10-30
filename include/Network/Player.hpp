@@ -40,15 +40,6 @@ namespace Network
             };
 
             /**
-             * @enum Statistic
-             * @brief The different types of player statistics.
-             */
-            enum class Statistic : std::uint8_t {
-                Shield = 0, /*!< Player shield statistic */
-                Force = 1 /*!< Player force statistic */
-            };
-
-            /**
              * @brief Create a new player.
              *
              * @param address The address of the player

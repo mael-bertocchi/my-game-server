@@ -41,6 +41,15 @@ enum class ActionType : std::uint8_t {
 using Position = Misc::Maths::Vector2<std::uint16_t>;
 
 /**
+ * @enum Statistic
+ * @brief The different types of statistics.
+ */
+enum class Statistic : std::uint8_t {
+    Shield = 0, /*!< The shield statistic */
+    Force = 1 /*!< The force statistic for more powerful missiles */
+};
+
+/**
  * @enum Direction
  * @brief The possible movement directions for the player.
  */

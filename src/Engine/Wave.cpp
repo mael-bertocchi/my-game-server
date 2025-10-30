@@ -16,6 +16,7 @@
 
 #include <optional>
 #include <format>
+#include <string>
 
 Engine::Wave::Wave(const std::uint32_t id) : _next(0), _id(id)
 {

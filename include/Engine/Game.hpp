@@ -288,7 +288,7 @@ namespace Engine
              * @param statistic The statistic that changed
              * @param status The new status of the statistic
              */
-            void SetPlayerIdStatistic(const std::uint32_t id, const Network::Player::Statistic& statistic, const bool status);
+            void SetPlayerIdStatistic(const std::uint32_t id, const Statistic& statistic, const bool status);
 
             /**
              * @brief Broadcast a player's statistic change to all players in the game
@@ -297,7 +297,7 @@ namespace Engine
              * @param statistic The statistic that changed
              * @param status The new status of the statistic
              */
-            void SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Network::Player::Statistic& statistic, const bool status);
+            void SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Statistic& statistic, const bool status);
 
             /**
              * @brief Check if a player is in the game

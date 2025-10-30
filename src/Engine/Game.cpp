@@ -17,12 +17,12 @@
 #include "Variables.hpp"
 #include "Types.hpp"
 
-#include <tuple>
 #include <unordered_map>
 #include <functional>
 #include <optional>
 #include <cstdint>
 #include <memory>
+#include <tuple>
 
 Engine::Game::Game() : _ids({0}), _wave(nullptr), _id(Misc::Utils::GetNextId("game")), _inactive(false), _started(false)
 {
@@ -312,11 +312,11 @@ void Engine::Game::MoveEntities()
             if (current != 0) {
                 const std::shared_ptr<Network::Player>& player = Storage::Cache::Player::GetInstance().GetPlayerById(current);
                 if (player) {
-                    if (player->IsStatisticGone(Network::Player::Statistic::Shield)) {
-                        SetPlayerIdStatistic(player, Network::Player::Statistic::Shield, false);
+                    if (player->IsStatisticActive(Statistic::Shield) && player->IsStatisticGone(Statistic::Shield)) {
+                        SetPlayerIdStatistic(player, Statistic::Shield, false);
                     }
-                    if (player->IsStatisticGone(Network::Player::Statistic::Force)) {
-                        SetPlayerIdStatistic(player, Network::Player::Statistic::Force, false);
+                    if (player->IsStatisticActive(Statistic::Shield) && player->IsStatisticGone(Statistic::Force)) {
+                        SetPlayerIdStatistic(player, Statistic::Force, false);
                     }
                 }
             }
@@ -579,11 +579,11 @@ void Engine::Game::ApplyCollisions(const Collision::Result& result)
     }
     for (const auto& [shieldId, playerId] : result.shields) {
         RemoveItem(shieldId, ItemType::Shield);
-        SetPlayerIdStatistic(playerId, Network::Player::Statistic::Shield, true);
+        SetPlayerIdStatistic(playerId, Statistic::Shield, true);
     }
     for (const auto& [forceId, playerId] : result.forces) {
         RemoveItem(forceId, ItemType::Force);
-        SetPlayerIdStatistic(playerId, Network::Player::Statistic::Force, true);
+        SetPlayerIdStatistic(playerId, Statistic::Force, true);
     }
     for (const std::uint32_t id : result.players) {
         KillPlayerId(id);
@@ -653,7 +653,7 @@ void Engine::Game::RemoveItem(const std::uint32_t id, const ItemType type)
     }
 }
 
-void Engine::Game::SetPlayerIdStatistic(const std::uint32_t id, const Network::Player::Statistic& statistic, const bool status)
+void Engine::Game::SetPlayerIdStatistic(const std::uint32_t id, const Statistic& statistic, const bool status)
 {
     std::shared_ptr<Network::Player> player = Storage::Cache::Player::GetInstance().GetPlayerById(id);
 
@@ -667,7 +667,7 @@ void Engine::Game::SetPlayerIdStatistic(const std::uint32_t id, const Network::P
     }
 }
 
-void Engine::Game::SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Network::Player::Statistic& statistic, const bool status)
+void Engine::Game::SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Statistic& statistic, const bool status)
 {
     if (player) {
         player->SetStatistic(statistic, status);

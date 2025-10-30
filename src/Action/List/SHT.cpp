@@ -33,7 +33,7 @@ void Action::List::SHT::ReceiveMessage(const std::uint32_t id, const std::vector
         }
 
         const Position& position = player->GetPosition();
-        if (player->IsStatisticActive(Network::Player::Statistic::Force)) {
+        if (player->IsStatisticActive(Statistic::Force)) {
             game->CreateMissile(position, MissileType::Force);
         } else {
             game->CreateMissile(position, MissileType::Player);

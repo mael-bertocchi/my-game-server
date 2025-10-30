@@ -24,7 +24,7 @@ void Action::List::STS::SendMessage(const std::uint32_t id, const std::any& cont
             throw Exception::GenericError(playerValidation.value());
         }
 
-        const auto& [playerId, statistic, status] = std::any_cast<std::tuple<std::uint32_t, Network::Player::Statistic, bool>>(content);
+        const auto& [playerId, statistic, status] = std::any_cast<std::tuple<std::uint32_t, Statistic, bool>>(content);
         const std::vector<std::uint8_t> serialized = Misc::Utils::Serialize(playerId, statistic, status);
 
         player->PushMessage(Wrapper::Socket::Protocol::UDP, {

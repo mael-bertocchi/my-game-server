@@ -57,11 +57,16 @@ function Process(dt)
     --- Spawn enemies periodically
     if waveTimer <= duration and enemySpawnTimer >= 3.0 then
         if #enemies < 5 then
-            local spawnY = Random(50, gameHeight - 50)
-            local spawnPosition = Position.new(gameWidth - 50, spawnY)
-
             local enemyTypes = { EnemyType.Generic, EnemyType.Walking, EnemyType.Flying }
             local randomType = enemyTypes[Random(1, #enemyTypes)]
+
+            local spawnY = 0
+            if randomType ~= EnemyType.Walking then
+                spawnY = Random(20, 320)
+            else
+                spawnY = 380
+            end
+            local spawnPosition = Position.new(gameWidth - 50, spawnY)
 
             CreateEnemy(spawnPosition, randomType)
         end
@@ -104,9 +109,9 @@ function Process(dt)
     end
 
     --- Spawn force items periodically
-    if forceItemSpawnTimer >= 15.0 then
+    if forceItemSpawnTimer >= 45.0 then
         local forceItemSpawnProbability = Random(1, 100)
-        if forceItemSpawnProbability <= 100 then
+        if forceItemSpawnProbability <= 20 then
             local playerCount = GetPlayerCount()
             if playerCount > 0 then
                 local itemPosition = Position.new(Random(100, gameWidth - 100), Random(50, gameHeight - 50))
