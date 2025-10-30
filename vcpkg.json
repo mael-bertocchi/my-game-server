@@ -1,0 +1,10 @@
+{
+  "name": "rtype-server",
+  "version": "1.0.0",
+  "dependencies": [
+    "libconfig",
+    "libpqxx",
+    "sol2",
+    "lua"
+  ]
+}

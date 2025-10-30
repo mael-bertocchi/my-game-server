@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 10, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": false,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${userHome}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    }
+  ]
+}
