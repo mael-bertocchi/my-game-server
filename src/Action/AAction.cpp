@@ -14,6 +14,9 @@ void Action::AAction::SendMessage(const std::uint32_t, const std::any&) const {}
 std::optional<std::string> Action::AAction::ValidatePlayer(const std::shared_ptr<Network::Player>& player, PlayerValidation flags) const
 {
     if (player) {
+        if ((flags & PlayerValidation::Administrator) != PlayerValidation::None && player->GetRole() != Role::Administrator) {
+            return "Player is not an administrator";
+        }
         if ((flags & PlayerValidation::Connected) != PlayerValidation::None && !player->IsConnected()) {
             return "Player not connected";
         }

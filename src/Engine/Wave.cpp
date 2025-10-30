@@ -11,6 +11,7 @@
 #include "Engine/Wave.hpp"
 #include "Engine/Game.hpp"
 #include "Storage/Game.hpp"
+#include "Storage/Player.hpp"
 #include "Variables.hpp"
 #include "Types.hpp"
 
@@ -49,23 +50,23 @@ void Engine::Wave::RegisterLuaBindings()
 
     _state.new_usertype<Entity>("Entity", "id", &Entity::id, "position", &Entity::position);
 
-    _state.new_enum<EnemyType>("EnemyType", {
-        {"Generic", EnemyType::Generic},
-        {"Walking", EnemyType::Walking},
-        {"Flying", EnemyType::Flying}
+    _state.new_enum<Enemy>("EnemyType", {
+        {"Generic", Enemy::Generic},
+        {"Walking", Enemy::Walking},
+        {"Flying", Enemy::Flying}
     });
 
-    _state.new_enum<MissileType>("MissileType", {
-        {"Player", MissileType::Player},
-        {"Enemy", MissileType::Enemy}
+    _state.new_enum<Missile>("MissileType", {
+        {"Player", Missile::Player},
+        {"Enemy", Missile::Enemy}
     });
 
-    _state.new_enum<ItemType>("ItemType", {
-        {"Shield", ItemType::Shield},
-        {"Force", ItemType::Force}
+    _state.new_enum<Item>("ItemType", {
+        {"Shield", Item::Shield},
+        {"Force", Item::Force}
     });
 
-    _state.set_function("GetEnemiesByType", [this](EnemyType type) -> sol::table {
+    _state.set_function("GetEnemiesByType", [this](Enemy type) -> sol::table {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -88,17 +89,17 @@ void Engine::Wave::RegisterLuaBindings()
             sol::table result = _state.create_table();
             std::size_t i = 1;
 
-            const auto& generic = game->GetEnemies(EnemyType::Generic);
+            const auto& generic = game->GetEnemies(Enemy::Generic);
             for (const auto& [id, entity] : generic) {
                 result[i++] = entity;
             }
 
-            const auto& walking = game->GetEnemies(EnemyType::Walking);
+            const auto& walking = game->GetEnemies(Enemy::Walking);
             for (const auto& [id, entity] : walking) {
                 result[i++] = entity;
             }
 
-            const auto& flying = game->GetEnemies(EnemyType::Flying);
+            const auto& flying = game->GetEnemies(Enemy::Flying);
             for (const auto& [id, entity] : flying) {
                 result[i++] = entity;
             }
@@ -107,16 +108,16 @@ void Engine::Wave::RegisterLuaBindings()
         return _state.create_table();
     });
 
-    _state.set_function("CreateEnemy", [this](Position pos, sol::optional<EnemyType> type) -> std::uint32_t {
+    _state.set_function("CreateEnemy", [this](Position pos, sol::optional<Enemy> type) -> std::uint32_t {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            return game->CreateEnemy(pos, type.value_or(EnemyType::Generic));
+            return game->CreateEnemy(pos, type.value_or(Enemy::Generic));
         }
         return 0;
     });
 
-    _state.set_function("MoveEnemy", [this](std::uint32_t id, std::int16_t dx, std::int16_t dy, EnemyType type) {
+    _state.set_function("MoveEnemy", [this](std::uint32_t id, std::int16_t dx, std::int16_t dy, Enemy type) {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -124,7 +125,7 @@ void Engine::Wave::RegisterLuaBindings()
         }
     });
 
-    _state.set_function("RemoveEnemy", [this](std::uint32_t id, EnemyType type) {
+    _state.set_function("RemoveEnemy", [this](std::uint32_t id, Enemy type) {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -132,7 +133,7 @@ void Engine::Wave::RegisterLuaBindings()
         }
     });
 
-    _state.set_function("GetMissilesByType", [this](MissileType type) -> sol::table {
+    _state.set_function("GetMissilesByType", [this](Missile type) -> sol::table {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -152,7 +153,7 @@ void Engine::Wave::RegisterLuaBindings()
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            const auto& missiles = game->GetMissiles(MissileType::Player);
+            const auto& missiles = game->GetMissiles(Missile::Player);
             sol::table result = _state.create_table();
             std::size_t i = 1;
 
@@ -168,7 +169,7 @@ void Engine::Wave::RegisterLuaBindings()
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            const auto& missiles = game->GetMissiles(MissileType::Enemy);
+            const auto& missiles = game->GetMissiles(Missile::Enemy);
             sol::table result = _state.create_table();
             std::size_t i = 1;
 
@@ -184,7 +185,7 @@ void Engine::Wave::RegisterLuaBindings()
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            return game->CreateMissile(pos, MissileType::Player);
+            return game->CreateMissile(pos, Missile::Player);
         }
         return 0;
     });
@@ -193,12 +194,12 @@ void Engine::Wave::RegisterLuaBindings()
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            return game->CreateMissile(pos, MissileType::Enemy);
+            return game->CreateMissile(pos, Missile::Enemy);
         }
         return 0;
     });
 
-    _state.set_function("CreateMissile", [this](Position pos, MissileType type) -> std::uint32_t {
+    _state.set_function("CreateMissile", [this](Position pos, Missile type) -> std::uint32_t {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -215,7 +216,7 @@ void Engine::Wave::RegisterLuaBindings()
         }
     });
 
-    _state.set_function("RemoveMissile", [this](std::uint32_t id, MissileType type) {
+    _state.set_function("RemoveMissile", [this](std::uint32_t id, Missile type) {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -223,7 +224,7 @@ void Engine::Wave::RegisterLuaBindings()
         }
     });
 
-    _state.set_function("GetItemsByType", [this](ItemType type) -> sol::table {
+    _state.set_function("GetItemsByType", [this](Item type) -> sol::table {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -246,12 +247,12 @@ void Engine::Wave::RegisterLuaBindings()
             sol::table result = _state.create_table();
             std::size_t i = 1;
 
-            const auto& shields = game->GetItems(ItemType::Shield);
+            const auto& shields = game->GetItems(Item::Shield);
             for (const auto& [id, entity] : shields) {
                 result[i++] = entity;
             }
 
-            const auto& forces = game->GetItems(ItemType::Force);
+            const auto& forces = game->GetItems(Item::Force);
             for (const auto& [id, entity] : forces) {
                 result[i++] = entity;
             }
@@ -261,7 +262,7 @@ void Engine::Wave::RegisterLuaBindings()
         return _state.create_table();
     });
 
-    _state.set_function("CreateItem", [this](Position pos, ItemType type) -> std::uint32_t {
+    _state.set_function("CreateItem", [this](Position pos, Item type) -> std::uint32_t {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -270,7 +271,7 @@ void Engine::Wave::RegisterLuaBindings()
         return 0;
     });
 
-    _state.set_function("RemoveItem", [this](std::uint32_t id, ItemType type) {
+    _state.set_function("RemoveItem", [this](std::uint32_t id, Item type) {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
@@ -297,6 +298,56 @@ void Engine::Wave::RegisterLuaBindings()
             return game->GetPlayerCount();
         }
         return 0;
+    });
+
+    _state.set_function("GetPlayerIds", [this]() -> sol::table {
+        auto ptr = _game.lock();
+        if (ptr) {
+            const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
+            const auto& ids = game->GetPlayerIds();
+            sol::table result = _state.create_table();
+            std::size_t i = 1;
+
+            for (const auto& id : ids) {
+                if (id != 0) {
+                    result[i++] = id;
+                }
+            }
+            return result;
+        }
+        return _state.create_table();
+    });
+
+    _state.set_function("GetPlayerPosition", [](std::uint32_t playerId) -> sol::optional<Position> {
+        std::shared_ptr<Network::Player> player = Storage::Cache::Player::GetInstance().GetPlayerById(playerId);
+        if (player) {
+            return player->GetPosition();
+        }
+        return sol::nullopt;
+    });
+
+    _state.set_function("GetPlayers", [this]() -> sol::table {
+        auto ptr = _game.lock();
+        if (ptr) {
+            const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
+            const auto& ids = game->GetPlayerIds();
+            sol::table result = _state.create_table();
+            std::size_t i = 1;
+
+            for (const auto& id : ids) {
+                if (id != 0) {
+                    std::shared_ptr<Network::Player> player = Storage::Cache::Player::GetInstance().GetPlayerById(id);
+                    if (player) {
+                        sol::table data = _state.create_table();
+                        data["id"] = id;
+                        data["position"] = player->GetPosition();
+                        result[i++] = data;
+                    }
+                }
+            }
+            return result;
+        }
+        return _state.create_table();
     });
 
     _state.set_function("Log", [](const std::string& message) {

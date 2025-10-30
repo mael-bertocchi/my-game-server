@@ -112,7 +112,7 @@ bool Engine::Game::KillPlayerId(const std::uint32_t id)
 
         for (const std::uint32_t& current : _ids) {
             if (current != 0) {
-                Action::Dispatcher::SendMessage(ActionType::DIE, current, std::make_pair(id, Misc::Utils::GetEnumIndex(CharacterType::Player)));
+                Action::Dispatcher::SendMessage(ActionType::DIE, current, std::make_pair(id, Misc::Utils::GetEnumIndex(Character::Player)));
             }
         }
         return true;
@@ -125,21 +125,21 @@ std::array<std::uint32_t, MAX_PLAYER_PER_GAMES> Engine::Game::GetPlayerIds() con
     return _ids;
 }
 
-std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetMissiles(const MissileType type)
+std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetMissiles(const Missile type)
 {
     switch (type) {
-        case MissileType::Player:
+        case Missile::Player:
             return _missiles.player;
-        case MissileType::Enemy:
+        case Missile::Enemy:
             return _missiles.enemy;
-        case MissileType::Force:
+        case Missile::Force:
             return _missiles.force;
         default:
             throw Exception::GenericError(std::format("Invalid missile type, got {}", Misc::Utils::GetEnumIndex(type)));
     }
 }
 
-std::optional<std::reference_wrapper<Entity>> Engine::Game::GetMissile(const std::uint32_t id, const MissileType type)
+std::optional<std::reference_wrapper<Entity>> Engine::Game::GetMissile(const std::uint32_t id, const Missile type)
 {
     std::unordered_map<std::uint32_t, Entity>& missiles = GetMissiles(type);
     auto it = missiles.find(id);
@@ -150,20 +150,20 @@ std::optional<std::reference_wrapper<Entity>> Engine::Game::GetMissile(const std
     return std::nullopt;
 }
 
-std::uint32_t Engine::Game::CreateMissile(Position position, const MissileType type)
+std::uint32_t Engine::Game::CreateMissile(Position position, const Missile type)
 {
     Entity missile = { .position = position, .id = 0, .health = 0 };
 
     switch (type) {
-        case MissileType::Player:
+        case Missile::Player:
             missile = { position, Misc::Utils::GetNextId(std::format("game-{}-player-missile", _id)), 0 };
             _missiles.player[missile.id] = missile;
             break;
-        case MissileType::Enemy:
+        case Missile::Enemy:
             missile = { position, Misc::Utils::GetNextId(std::format("game-{}-enemy-missile", _id)), 0 };
             _missiles.enemy[missile.id] = missile;
             break;
-        case MissileType::Force:
+        case Missile::Force:
             missile = { position, Misc::Utils::GetNextId(std::format("game-{}-player-force-missile", _id)), 0 };
             _missiles.force[missile.id] = missile;
             break;
@@ -180,7 +180,7 @@ std::uint32_t Engine::Game::CreateMissile(Position position, const MissileType t
 
 void Engine::Game::MoveMissile(std::uint32_t id, const std::int16_t dx, const std::int16_t dy)
 {
-    std::optional<std::reference_wrapper<Entity>> opt = GetMissile(id, MissileType::Enemy);
+    std::optional<std::reference_wrapper<Entity>> opt = GetMissile(id, Missile::Enemy);
 
     if (opt.has_value()) {
         Entity& missile = opt->get();
@@ -189,7 +189,7 @@ void Engine::Game::MoveMissile(std::uint32_t id, const std::int16_t dx, const st
         std::int32_t newY = static_cast<std::int32_t>(missile.position.y) + dy;
 
         if (newX < 0) {
-            RemoveMissile(id, MissileType::Enemy);
+            RemoveMissile(id, Missile::Enemy);
         } else {
             if (newX > WINDOW_WIDTH) {
                 newX = WINDOW_WIDTH;
@@ -202,12 +202,12 @@ void Engine::Game::MoveMissile(std::uint32_t id, const std::int16_t dx, const st
             missile.position.x = static_cast<std::uint16_t>(newX);
             missile.position.y = static_cast<std::uint16_t>(newY);
 
-            QueuePosition(missile.id, Misc::Utils::GetEnumIndex(MissileType::Enemy), missile.position);
+            QueuePosition(missile.id, Misc::Utils::GetEnumIndex(Missile::Enemy), missile.position);
         }
     }
 }
 
-bool Engine::Game::MoveMissile(Entity& missile, const MissileType type)
+bool Engine::Game::MoveMissile(Entity& missile, const Missile type)
 {
     if (missile.position.x > WINDOW_WIDTH) {
         return true;
@@ -217,7 +217,7 @@ bool Engine::Game::MoveMissile(Entity& missile, const MissileType type)
     return false;
 }
 
-void Engine::Game::RemoveMissile(const std::uint32_t id, const MissileType type)
+void Engine::Game::RemoveMissile(const std::uint32_t id, const Missile type)
 {
     std::unordered_map<std::uint32_t, Entity>& missiles = GetMissiles(type);
     auto it = missiles.find(id);
@@ -287,25 +287,25 @@ void Engine::Game::MoveEntities()
         std::vector<std::uint32_t> missiles = {};
 
         for (auto& [id, missile] : _missiles.player) {
-            if (MoveMissile(missile, MissileType::Player)) {
+            if (MoveMissile(missile, Missile::Player)) {
                 missiles.push_back(id);
             }
         }
 
         for (const auto& id : missiles) {
-            RemoveMissile(id, MissileType::Player);
+            RemoveMissile(id, Missile::Player);
         }
 
         missiles.clear();
 
         for (auto& [id, missile] : _missiles.force) {
-            if (MoveMissile(missile, MissileType::Force)) {
+            if (MoveMissile(missile, Missile::Force)) {
                 missiles.push_back(id);
             }
         }
 
         for (const auto& id : missiles) {
-            RemoveMissile(id, MissileType::Force);
+            RemoveMissile(id, Missile::Force);
         }
 
         for (const std::uint32_t& current : _ids) {
@@ -381,6 +381,14 @@ void Engine::Game::Next()
             Action::Dispatcher::SendMessage(ActionType::NXT, current);
         }
     }
+    _missiles.player.clear();
+    _missiles.enemy.clear();
+    _missiles.force.clear();
+
+    _enemies.generic.clear();
+    _enemies.walking.clear();
+    _enemies.flying.clear();
+
     _positions.clear();
 }
 
@@ -440,21 +448,21 @@ std::uint8_t Engine::Game::GetPlayerCount() const
     return count;
 }
 
-std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetEnemies(const EnemyType type)
+std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetEnemies(const Enemy type)
 {
     switch (type) {
-        case EnemyType::Generic:
+        case Enemy::Generic:
             return _enemies.generic;
-        case EnemyType::Walking:
+        case Enemy::Walking:
             return _enemies.walking;
-        case EnemyType::Flying:
+        case Enemy::Flying:
             return _enemies.flying;
         default:
             throw Exception::GenericError(std::format("Invalid enemy type, got {}", Misc::Utils::GetEnumIndex(type)));
     }
 }
 
-std::optional<std::reference_wrapper<Entity>> Engine::Game::GetEnemy(const std::uint32_t id, const EnemyType type)
+std::optional<std::reference_wrapper<Entity>> Engine::Game::GetEnemy(const std::uint32_t id, const Enemy type)
 {
     std::unordered_map<std::uint32_t, Entity>& enemies = GetEnemies(type);
     auto it = enemies.find(id);
@@ -465,7 +473,7 @@ std::optional<std::reference_wrapper<Entity>> Engine::Game::GetEnemy(const std::
     return std::nullopt;
 }
 
-std::uint32_t Engine::Game::CreateEnemy(const Position position, const EnemyType type)
+std::uint32_t Engine::Game::CreateEnemy(const Position position, const Enemy type)
 {
     std::unordered_map<std::uint32_t, Entity>& enemies = GetEnemies(type);
     std::size_t size = _enemies.generic.size() + _enemies.walking.size() + _enemies.flying.size();
@@ -487,7 +495,7 @@ std::uint32_t Engine::Game::CreateEnemy(const Position position, const EnemyType
     return enemy.id;
 }
 
-void Engine::Game::MoveEnemy(const std::uint32_t id, const EnemyType type, const std::int16_t dx, const std::int16_t dy)
+void Engine::Game::MoveEnemy(const std::uint32_t id, const Enemy type, const std::int16_t dx, const std::int16_t dy)
 {
     std::optional<std::reference_wrapper<Entity>> opt = GetEnemy(id, type);
 
@@ -516,7 +524,7 @@ void Engine::Game::MoveEnemy(const std::uint32_t id, const EnemyType type, const
     }
 }
 
-void Engine::Game::RemoveEnemy(const std::uint32_t id, const EnemyType type)
+void Engine::Game::RemoveEnemy(const std::uint32_t id, const Enemy type)
 {
     std::unordered_map<std::uint32_t, Entity>& enemies = GetEnemies(type);
     auto it = enemies.find(id);
@@ -532,7 +540,7 @@ void Engine::Game::RemoveEnemy(const std::uint32_t id, const EnemyType type)
     }
 }
 
-bool Engine::Game::DamageEnemy(const std::uint32_t id, const EnemyType type, const std::int32_t damage)
+bool Engine::Game::DamageEnemy(const std::uint32_t id, const Enemy type, const std::int32_t damage)
 {
     std::unordered_map<std::uint32_t, Entity>& enemies = GetEnemies(type);
     auto it = enemies.find(id);
@@ -551,38 +559,38 @@ bool Engine::Game::DamageEnemy(const std::uint32_t id, const EnemyType type, con
 void Engine::Game::ApplyCollisions(const Collision::Result& result)
 {
     for (const auto& [enemyId, damage] : result.damaged.generic) {
-        DamageEnemy(enemyId, EnemyType::Generic, damage);
+        DamageEnemy(enemyId, Enemy::Generic, damage);
     }
     for (const auto& [enemyId, damage] : result.damaged.walking) {
-        DamageEnemy(enemyId, EnemyType::Walking, damage);
+        DamageEnemy(enemyId, Enemy::Walking, damage);
     }
     for (const auto& [enemyId, damage] : result.damaged.flying) {
-        DamageEnemy(enemyId, EnemyType::Flying, damage);
+        DamageEnemy(enemyId, Enemy::Flying, damage);
     }
     for (const std::uint32_t id : result.enemies.generic) {
-        RemoveEnemy(id, EnemyType::Generic);
+        RemoveEnemy(id, Enemy::Generic);
     }
     for (const std::uint32_t id : result.enemies.walking) {
-        RemoveEnemy(id, EnemyType::Walking);
+        RemoveEnemy(id, Enemy::Walking);
     }
     for (const std::uint32_t id : result.enemies.flying) {
-        RemoveEnemy(id, EnemyType::Flying);
+        RemoveEnemy(id, Enemy::Flying);
     }
     for (const std::uint32_t id : result.missiles.player) {
-        RemoveMissile(id, MissileType::Player);
+        RemoveMissile(id, Missile::Player);
     }
     for (const std::uint32_t id : result.missiles.force) {
-        RemoveMissile(id, MissileType::Force);
+        RemoveMissile(id, Missile::Force);
     }
     for (const std::uint32_t id : result.missiles.enemy) {
-        RemoveMissile(id, MissileType::Enemy);
+        RemoveMissile(id, Missile::Enemy);
     }
     for (const auto& [shieldId, playerId] : result.shields) {
-        RemoveItem(shieldId, ItemType::Shield);
+        RemoveItem(shieldId, Item::Shield);
         SetPlayerIdStatistic(playerId, Statistic::Shield, true);
     }
     for (const auto& [forceId, playerId] : result.forces) {
-        RemoveItem(forceId, ItemType::Force);
+        RemoveItem(forceId, Item::Force);
         SetPlayerIdStatistic(playerId, Statistic::Force, true);
     }
     for (const std::uint32_t id : result.players) {
@@ -590,19 +598,19 @@ void Engine::Game::ApplyCollisions(const Collision::Result& result)
     }
 }
 
-std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetItems(const ItemType type)
+std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetItems(const Item type)
 {
     switch (type) {
-        case ItemType::Shield:
+        case Item::Shield:
             return _items.shield;
-        case ItemType::Force:
+        case Item::Force:
             return _items.force;
         default:
             throw Exception::GenericError(std::format("Invalid item type, got {}", Misc::Utils::GetEnumIndex(type)));
     }
 }
 
-std::optional<std::reference_wrapper<Entity>> Engine::Game::GetItem(const std::uint32_t id, const ItemType type)
+std::optional<std::reference_wrapper<Entity>> Engine::Game::GetItem(const std::uint32_t id, const Item type)
 {
     std::unordered_map<std::uint32_t, Entity>& items = GetItems(type);
     auto it = items.find(id);
@@ -613,16 +621,16 @@ std::optional<std::reference_wrapper<Entity>> Engine::Game::GetItem(const std::u
     return std::nullopt;
 }
 
-std::uint32_t Engine::Game::CreateItem(const Position position, const ItemType type)
+std::uint32_t Engine::Game::CreateItem(const Position position, const Item type)
 {
     Entity item = { .position = position, .id = 0, .health = 0 };
 
     switch (type) {
-        case ItemType::Shield:
+        case Item::Shield:
             item = { position, Misc::Utils::GetNextId(std::format("game-{}-shield-item", _id)), 0 };
             _items.shield[item.id] = item;
             break;
-        case ItemType::Force:
+        case Item::Force:
             item = { position, Misc::Utils::GetNextId(std::format("game-{}-force-item", _id)), 0 };
             _items.force[item.id] = item;
             break;
@@ -637,7 +645,7 @@ std::uint32_t Engine::Game::CreateItem(const Position position, const ItemType t
     return item.id;
 }
 
-void Engine::Game::RemoveItem(const std::uint32_t id, const ItemType type)
+void Engine::Game::RemoveItem(const std::uint32_t id, const Item type)
 {
     std::unordered_map<std::uint32_t, Entity>& items = GetItems(type);
     auto it = items.find(id);
@@ -667,10 +675,10 @@ void Engine::Game::SetPlayerIdStatistic(const std::uint32_t id, const Statistic&
     }
 }
 
-void Engine::Game::SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Statistic& statistic, const bool status)
+void Engine::Game::SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Statistic& statistic, const bool status, const bool god)
 {
     if (player) {
-        player->SetStatistic(statistic, status);
+        player->SetStatistic(statistic, status, god);
         for (const std::uint32_t& current : _ids) {
             if (current != 0) {
                 Action::Dispatcher::SendMessage(ActionType::STS, current, std::make_tuple(player->GetId(), statistic, status));

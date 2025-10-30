@@ -14,9 +14,10 @@
 #include "Variables.hpp"
 #include "Types.hpp"
 
+#include <cctype>
 #include <format>
 
-Network::Player::Player(const std::string& address, const std::uint16_t port) : _address(address), _port(port), _id(Misc::Utils::GetNextId("player")), _position({0, 0}), _playing(false), _alive(true)
+Network::Player::Player(const std::string& address, const std::uint16_t port) : _address(address), _port(port), _id(Misc::Utils::GetNextId("player")), _position({0, 0}), _role(Role::Player), _playing(false), _alive(true), _god(false)
 {
     _statistics = {
         { Statistic::Shield, { Misc::Clock(), false } },
@@ -92,7 +93,7 @@ bool Network::Player::DoesExist(const std::string& username) const
 bool Network::Player::Connect(const std::string& username, const std::string& password) {
     try {
         auto transaction = Storage::Database::GetInstance().CreateTransaction();
-        const pqxx::result result = transaction->exec("SELECT password_hash FROM players WHERE username = $1", pqxx::params{username});
+        const pqxx::result result = transaction->exec("SELECT password_hash, role FROM players WHERE username = $1", pqxx::params{username});
 
         if (result.empty()) {
             Misc::Logger::Log(std::format("Username '{}' not found for player {}", username, _id), Misc::Logger::LogLevel::Caution);
@@ -100,10 +101,14 @@ bool Network::Player::Connect(const std::string& username, const std::string& pa
         }
 
         const std::string stored_hash = result[0]["password_hash"].as<std::string>();
+        const std::string role = result[0]["role"].as<std::string>();
 
         if (Misc::Password::VerifyPassword(password, stored_hash)) {
-            _username = username;
             Misc::Logger::Log(std::format("Player {} successfully connected as '{}'", _id, username));
+            if (role != "player") {
+                _role = Role::Administrator;
+            }
+            _username = username;
             return true;
         }
 
@@ -245,15 +250,27 @@ const Position& Network::Player::GetPosition() const
     return _position;
 }
 
-void Network::Player::SetStatistic(const Statistic& statistic, const bool status)
+const Role& Network::Player::GetRole() const
+{
+    return _role;
+}
+
+void Network::Player::SetStatistic(const Statistic& statistic, const bool status, const bool god)
 {
     const std::string str = StatisticToString(statistic);
 
-    Misc::Logger::Log(std::format("{} statistic {} for player {}", status ? "Activated" : "Deactivated", str, _id));
-    if (status) {
-        _statistics[statistic].first.Reset();
+    if (!god && _god) {
+        Misc::Logger::Log(std::format("When god mode is active, you must call this function with god paramaeter set to modify {} statistic for player {}", str, _id));
+    } else {
+        Misc::Logger::Log(std::format("{} statistic {} for player {}", status ? "Activate" : "Deactivate", str, _id));
+        if (status) {
+            _statistics[statistic].first.Reset();
+            _god = god;
+        } else {
+            _god = false;
+        }
+        _statistics[statistic].second = status;
     }
-    _statistics[statistic].second = status;
 }
 
 bool Network::Player::IsStatisticActive(const Statistic& statistic) const
@@ -263,6 +280,9 @@ bool Network::Player::IsStatisticActive(const Statistic& statistic) const
 
 bool Network::Player::IsStatisticGone(const Statistic& statistic) const
 {
+    if (_god) {
+        return false;
+    }
     return _statistics.at(statistic).first.HasElapsed(PLAYER_STATISTIC_DURATION_MS);
 }
 

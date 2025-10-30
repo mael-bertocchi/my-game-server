@@ -31,7 +31,8 @@ enum class ActionType : std::uint8_t {
     STR = 11, /*!< Start the game */
     STP = 12, /*!< Stop the game */
     STS = 13, /*!< Shield status update */
-    NXT = 14 /*!< Next wave notification */
+    NXT = 14, /*!< Next wave notification */
+    GOD = 15 /*!< Toggle god mode */
 };
 
 /**
@@ -47,6 +48,15 @@ using Position = Misc::Maths::Vector2<std::uint16_t>;
 enum class Statistic : std::uint8_t {
     Shield = 0, /*!< The shield statistic */
     Force = 1 /*!< The force statistic for more powerful missiles */
+};
+
+/**
+ * @enum Role
+ * @brief The different roles a player can have.
+ */
+enum class Role : std::uint8_t {
+    Administrator = 0, /*!< Administrator with elevated privileges */
+    Player = 1 /*!< Regular player */
 };
 
 /**
@@ -68,7 +78,7 @@ enum class Direction : std::uint8_t {
  * @enum MissileType
  * @brief The different types of missiles in the game.
  */
-enum class MissileType : std::uint8_t {
+enum class Missile : std::uint8_t {
     Player = 0, /*!< Player missile */
     Enemy = 1, /*!< Enemy missile */
     Force = 2 /*!< Player force missile */
@@ -78,7 +88,7 @@ enum class MissileType : std::uint8_t {
  * @enum EnemyType
  * @brief The different types of enemies in the game.
  */
-enum class EnemyType : std::uint8_t {
+enum class Enemy : std::uint8_t {
     Generic = 3, /*!< The default enemy */
     Walking = 4, /*!< An enemy that walks on the ground */
     Flying = 5 /*!< An enemy that flies on the air */
@@ -88,7 +98,7 @@ enum class EnemyType : std::uint8_t {
  * @enum ItemType
  * @brief The different types of items in the game.
  */
-enum class ItemType : std::uint8_t {
+enum class Item : std::uint8_t {
     Shield = 6, /*!< Shield item */
     Force = 7 /*!< Force item */
 };
@@ -97,7 +107,7 @@ enum class ItemType : std::uint8_t {
  * @enum CharacterType
  * @brief The different types of characters in the game.
  */
-enum class CharacterType : std::uint8_t {
+enum class Character : std::uint8_t {
     Player = 8 /*!< Player character */
 };
 

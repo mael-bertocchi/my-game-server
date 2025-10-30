@@ -10,6 +10,7 @@
 #include "Action/List/DFY.hpp"
 #include "Action/List/DIE.hpp"
 #include "Action/List/ERR.hpp"
+#include "Action/List/GOD.hpp"
 #include "Action/List/JON.hpp"
 #include "Action/List/LVE.hpp"
 #include "Action/List/NXT.hpp"
@@ -48,6 +49,7 @@ Action::IAction* Action::Dispatcher::GetAction(const ActionType type)
         elements[ActionType::DFY] = std::make_unique<Action::List::DFY>();
         elements[ActionType::DIE] = std::make_unique<Action::List::DIE>();
         elements[ActionType::ERR] = std::make_unique<Action::List::ERR>();
+        elements[ActionType::GOD] = std::make_unique<Action::List::GOD>();
         elements[ActionType::JON] = std::make_unique<Action::List::JON>();
         elements[ActionType::LVE] = std::make_unique<Action::List::LVE>();
         elements[ActionType::NXT] = std::make_unique<Action::List::NXT>();

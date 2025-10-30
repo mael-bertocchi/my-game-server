@@ -92,7 +92,7 @@ namespace Engine
              * @param type The type of missiles to retrieve
              * @return A reference to the unordered_map of missiles
              */
-            std::unordered_map<std::uint32_t, Entity>& GetMissiles(const MissileType type);
+            std::unordered_map<std::uint32_t, Entity>& GetMissiles(const Missile type);
 
             /**
              * @brief Get a missile by its identifier and type
@@ -101,7 +101,7 @@ namespace Engine
              * @param type The type of missile
              * @return A reference wrapper to the missile if found, nullopt otherwise
              */
-            std::optional<std::reference_wrapper<Entity>> GetMissile(const std::uint32_t id, const MissileType type);
+            std::optional<std::reference_wrapper<Entity>> GetMissile(const std::uint32_t id, const Missile type);
 
             /**
              * @brief Create a new player missile in the game
@@ -110,7 +110,7 @@ namespace Engine
              * @param type The type of missile
              * @return The unique identifier of the created player missile
              */
-            std::uint32_t CreateMissile(Position position, const MissileType type);
+            std::uint32_t CreateMissile(Position position, const Missile type);
 
             /**
              * @brief Move enemy missile in the game
@@ -128,7 +128,7 @@ namespace Engine
              * @param type The type of missile being moved
              * @return True if the missile should be removed (out of bounds), false otherwise
              */
-            bool MoveMissile(Entity& missile, const MissileType type);
+            bool MoveMissile(Entity& missile, const Missile type);
 
             /**
              * @brief Remove missile from the game
@@ -136,7 +136,7 @@ namespace Engine
              * @param id The unique identifier of the missile to remove
              * @param type The type of missile
              */
-            void RemoveMissile(const std::uint32_t id, const MissileType type);
+            void RemoveMissile(const std::uint32_t id, const Missile type);
 
             /**
              * @brief Check if the game has started
@@ -187,7 +187,7 @@ namespace Engine
              * @param type The type of enemies to retrieve
              * @return A reference to the unordered_map of enemies
              */
-            std::unordered_map<std::uint32_t, Entity>& GetEnemies(const EnemyType type);
+            std::unordered_map<std::uint32_t, Entity>& GetEnemies(const Enemy type);
 
             /**
              * @brief Get an enemy by its identifier and type
@@ -196,7 +196,7 @@ namespace Engine
              * @param type The type of enemy
              * @return A reference wrapper to the enemy if found, nullopt otherwise
              */
-            std::optional<std::reference_wrapper<Entity>> GetEnemy(const std::uint32_t id, const EnemyType type);
+            std::optional<std::reference_wrapper<Entity>> GetEnemy(const std::uint32_t id, const Enemy type);
 
             /**
              * @brief Create a new enemy in the game at a specific position
@@ -205,7 +205,7 @@ namespace Engine
              * @param type The type of enemy to create
              * @return The unique identifier of the created enemy
              */
-            std::uint32_t CreateEnemy(const Position position, const EnemyType type);
+            std::uint32_t CreateEnemy(const Position position, const Enemy type);
 
             /**
              * @brief Move an enemy by its identifier
@@ -215,7 +215,7 @@ namespace Engine
              * @param dx The change in X position
              * @param dy The change in Y position
              */
-            void MoveEnemy(const std::uint32_t id, const EnemyType type, const std::int16_t dx, const std::int16_t dy);
+            void MoveEnemy(const std::uint32_t id, const Enemy type, const std::int16_t dx, const std::int16_t dy);
 
             /**
              * @brief Remove an enemy from the game
@@ -223,7 +223,7 @@ namespace Engine
              * @param id The unique identifier of the enemy to remove
              * @param type The type of enemy to remove
              */
-            void RemoveEnemy(const std::uint32_t id, const EnemyType type);
+            void RemoveEnemy(const std::uint32_t id, const Enemy type);
 
             /**
              * @brief Damage an enemy and remove it if health drops to or below 0
@@ -233,7 +233,7 @@ namespace Engine
              * @param damage The amount of damage to deal
              * @return True if the enemy was killed, false if still alive
              */
-            bool DamageEnemy(const std::uint32_t id, const EnemyType type, const std::int32_t damage);
+            bool DamageEnemy(const std::uint32_t id, const Enemy type, const std::int32_t damage);
 
             /**
              * @brief Get all items of a specific type
@@ -241,7 +241,7 @@ namespace Engine
              * @param type The type of items to retrieve
              * @return A reference to the unordered_map of items
              */
-            std::unordered_map<std::uint32_t, Entity>& GetItems(const ItemType type);
+            std::unordered_map<std::uint32_t, Entity>& GetItems(const Item type);
 
             /**
              * @brief Get an item by its identifier and type
@@ -250,7 +250,7 @@ namespace Engine
              * @param type The type of item
              * @return A reference wrapper to the item if found, nullopt otherwise
              */
-            std::optional<std::reference_wrapper<Entity>> GetItem(const std::uint32_t id, const ItemType type);
+            std::optional<std::reference_wrapper<Entity>> GetItem(const std::uint32_t id, const Item type);
 
             /**
              * @brief Create a new item in the game at a specific position
@@ -259,7 +259,7 @@ namespace Engine
              * @param type The type of item to create
              * @return The unique identifier of the created item
              */
-            std::uint32_t CreateItem(const Position position, const ItemType type);
+            std::uint32_t CreateItem(const Position position, const Item type);
 
             /**
              * @brief Remove an item from the game
@@ -267,7 +267,17 @@ namespace Engine
              * @param id The unique identifier of the item to remove
              * @param type The type of item to remove
              */
-            void RemoveItem(const std::uint32_t id, const ItemType type);
+            void RemoveItem(const std::uint32_t id, const Item type);
+
+            /**
+             * @brief Broadcast a player's statistic change to all players in the game
+             *
+             * @param player The player whose statistic changed
+             * @param statistic The statistic that changed
+             * @param status The new status of the statistic
+             * @param god Whether the change is due to god mode
+             */
+            void SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Statistic& statistic, const bool status, const bool god = false);
 
         private:
             /**
@@ -289,15 +299,6 @@ namespace Engine
              * @param status The new status of the statistic
              */
             void SetPlayerIdStatistic(const std::uint32_t id, const Statistic& statistic, const bool status);
-
-            /**
-             * @brief Broadcast a player's statistic change to all players in the game
-             *
-             * @param player The player whose statistic changed
-             * @param statistic The statistic that changed
-             * @param status The new status of the statistic
-             */
-            void SetPlayerIdStatistic(const std::shared_ptr<Network::Player>& player, const Statistic& statistic, const bool status);
 
             /**
              * @brief Check if a player is in the game

@@ -37,7 +37,7 @@ void Action::List::OVE::ReceiveMessage(const std::uint32_t id, const std::vector
         const Direction direction = static_cast<Direction>(body[0]);
         const Position position = player->Move(direction);
 
-        game->QueuePosition(id, Misc::Utils::GetEnumIndex(CharacterType::Player), position);
+        game->QueuePosition(id, Misc::Utils::GetEnumIndex(Character::Player), position);
     } catch (const Exception::GenericError& ex) {
         Misc::Logger::Log(std::format("Failed to process OVE for player {}: {}", id, ex.what()), Misc::Logger::LogLevel::Critical);
     } catch (const std::exception& ex) {

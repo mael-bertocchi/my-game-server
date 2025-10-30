@@ -177,11 +177,19 @@ namespace Network
             const Position& GetPosition() const;
 
             /**
+             * @brief Get the role of the player
+             *
+             * @return The role of the player
+             */
+            const Role& GetRole() const;
+
+            /**
              * @brief Set the shielded status of the player
              *
              * @param status True to activate shield, false to deactivate
+             * @param god True to override existing status, false to respect current status
              */
-            void SetStatistic(const Statistic& statistic, const bool status);
+            void SetStatistic(const Statistic& statistic, const bool status, const bool god = false);
 
             /**
              * @brief Check if a specific statistic is active for the player
@@ -208,19 +216,21 @@ namespace Network
              */
             const std::string StatisticToString(const Statistic& statistic) const;
 
-            mutable std::mutex _tcpMutex; /*!< Mutex to protect tcp message queue */
-            mutable std::mutex _udpMutex; /*!< Mutex to protect udp message queue */
+            mutable std::mutex _tcpMutex; /*!< Mutex to protect transmission control protocol message queue */
+            mutable std::mutex _udpMutex; /*!< Mutex to protect user datagram protocol message queue */
 
-            std::queue<Message> _tcp; /*!< Queue of messages to be sent to the player */
-            std::queue<Message> _udp; /*!< Queue of messages to be sent to the player */
-            std::string _username; /*!< Player username */
-            std::string _address; /*!< Client address as string */
-            std::uint16_t _port; /*!< Client port */
-            std::uint32_t _id; /*!< Session identifier */
+            std::queue<Message> _tcp; /*!< The queue of messages to be sent to the player using transmission control protocol */
+            std::queue<Message> _udp; /*!< The queue of messages to be sent to the player using user datagram protocol */
+            std::string _username; /*!< The username of the player */
+            std::string _address; /*!< The address where the player is connected */
+            std::uint16_t _port; /*!< The port where the player is connected */
+            std::uint32_t _id; /*!< The unique identifier of the player */
 
             std::unordered_map<Statistic, std::pair<Misc::Clock, bool>> _statistics; /*!< Clocks and statuses for various player statistics */
-            Position _position; /*!< Player position */
+            Position _position; /*!< The current position of the player */
+            Role _role; /*!< The role of the player fetched from database */
             bool _playing; /*!< Whether the player is currently in a game session */
             bool _alive; /*!< Whether the player is currently alive in the game */
+            bool _god; /*!< Whether the player override the shield reset */
     };
 }

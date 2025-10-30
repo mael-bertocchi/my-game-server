@@ -34,10 +34,11 @@ namespace Action
              */
             enum class PlayerValidation : std::uint8_t {
                 None = 0, /*!< No validation */
-                NotConnected = 1 << 0, /*!< Player must not be connected */
-                NotPlaying = 1 << 1, /*!< Player must not be in a game */
-                Connected = 1 << 2, /*!< Player must be connected */
-                Playing = 1 << 3 /*!< Player must be in a game */
+                Administrator = 1 << 0, /*!< Player must be an administrator */
+                NotConnected = 1 << 1, /*!< Player must not be connected */
+                NotPlaying = 1 << 2, /*!< Player must not be in a game */
+                Connected = 1 << 3, /*!< Player must be connected */
+                Playing = 1 << 4 /*!< Player must be in a game */
             };
 
             /**
