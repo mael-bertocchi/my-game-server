@@ -10,6 +10,7 @@
 #include "Variables.hpp"
 #include "Types.hpp"
 
+#include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
 #include <cstdint>
@@ -37,6 +38,7 @@ namespace Engine
                 std::unordered_set<std::uint32_t> player; /*!< Player missiles to delete */
                 std::unordered_set<std::uint32_t> enemy; /*!< Enemy missiles to delete */
                 std::unordered_set<std::uint32_t> force; /*!< Player force missiles to delete */
+                std::unordered_set<std::uint32_t> boss; /*!< Boss missiles to delete */
             };
 
             /**
@@ -47,6 +49,7 @@ namespace Engine
                 std::unordered_set<std::uint32_t> generic; /*!< Standard enemies to delete */
                 std::unordered_set<std::uint32_t> walking; /*!< Walking enemies to delete */
                 std::unordered_set<std::uint32_t> flying; /*!< Flying enemies to delete */
+                std::unordered_set<std::uint32_t> boss; /*!< Boss enemies to delete */
             };
 
             /**
@@ -54,9 +57,10 @@ namespace Engine
              * @brief Structure containing damaged enemy collision results (not dead)
              */
             struct DamagedResult {
-                std::unordered_map<std::uint32_t, std::int32_t> generic; /*!< Generic enemies damaged (enemyId -> damage amount) */
-                std::unordered_map<std::uint32_t, std::int32_t> walking; /*!< Walking enemies damaged (enemyId -> damage amount) */
-                std::unordered_map<std::uint32_t, std::int32_t> flying; /*!< Flying enemies damaged (enemyId -> damage amount) */
+                std::unordered_map<std::uint32_t, std::int32_t> generic; /*!< Generic enemies damaged */
+                std::unordered_map<std::uint32_t, std::int32_t> walking; /*!< Walking enemies damaged */
+                std::unordered_map<std::uint32_t, std::int32_t> flying; /*!< Flying enemies damaged */
+                std::unordered_map<std::uint32_t, std::int32_t> boss; /*!< Boss enemies damaged */
             };
 
             /**

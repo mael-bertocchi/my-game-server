@@ -1,5 +1,4 @@
---- Simple Wave Script Example
---- This demonstrates all available Lua bindings for controlling the game
+--- Default Wave Script
 
 local shieldItemSpawnTimer = 0
 local forceItemSpawnTimer = 0
@@ -11,11 +10,38 @@ local waveTimer = 0
 
 local gameHeight = GetHeight()
 local gameWidth = GetWidth()
-local duration = 120.0
+local duration = 20.0
+
+-- Sinusoidal movement state for flying enemies:
+-- flyingPhases[id] = { phase = number, baseY = number, amplitude = number, freq = number }
+local flyingPhases = {}
+-- A running time value used to evaluate the sine wave
+local sinTime = 0.0
+
+local function toInt(n)
+    if n == nil then
+        return 0
+    end
+    if n >= 0 then
+        return math.floor(n + 0.5)
+    else
+        return math.ceil(n - 0.5)
+    end
+end
 
 --- Optional initialization function called when wave loads
 function OnInit()
     Log("Hello from OnInit function!")
+
+    local existingFlying = GetEnemiesByType(EnemyType.Flying)
+    for _, e in ipairs(existingFlying) do
+        flyingPhases[e.id] = {
+            phase = (Random(0, 6283) / 1000.0),
+            baseY = e.position.y,
+            amplitude = Random(12, 28),
+            freq = Random(1, 3)
+        }
+    end
 end
 
 --- Main process function called every frame
@@ -30,6 +56,9 @@ function Process(dt)
     enemyMoveTimer = enemyMoveTimer + dt
     waveTimer = waveTimer + dt
 
+    -- advance sinusoidal time
+    sinTime = sinTime + dt
+
     if waveTimer < 5.0 then
         return false
     end
@@ -43,7 +72,7 @@ function Process(dt)
         if missileLaunchProbability <= 70 then
             for _, enemy in ipairs(enemies) do
                 local newPosition = Position.new(enemy.position.x - 5, enemy.position.y)
-                CreateEnemyMissile(newPosition)
+                CreateMissile(MissileType.Enemy, newPosition)
             end
         end
         missileLaunchTimer = 0
@@ -51,9 +80,9 @@ function Process(dt)
 
     -- Move enemy missiles
     if missileMoveTimer >= 0.2 then
-        local missiles = GetEnemyMissiles()
+        local missiles = GetMissilesByType(MissileType.Enemy)
         for _, missile in ipairs(missiles) do
-            MoveEnemyMissile(missile.id, -20, 0)
+            MoveMissile(missile.id, MissileType.Enemy, toInt(-10), toInt(0))
         end
         missileMoveTimer = 0
     end
@@ -61,18 +90,26 @@ function Process(dt)
     -- Spawn enemies periodically
     if waveTimer <= duration and enemySpawnTimer >= 3.0 then
         if #enemies < 5 then
-            local enemyTypes = { EnemyType.Generic, EnemyType.Walking, EnemyType.Flying }
-            local randomType = enemyTypes[Random(1, #enemyTypes)]
+            local types = { EnemyType.Generic, EnemyType.Walking, EnemyType.Flying }
+            local type = types[Random(1, #types)]
 
-            local spawnY = 0
-            if randomType ~= EnemyType.Walking then
-                spawnY = Random(30, 320)
+            local y = 0
+            if type ~= EnemyType.Walking then
+                y = Random(30, 320)
             else
-                spawnY = 380
+                y = 380
             end
-            local spawnPosition = Position.new(gameWidth - 50, spawnY)
+            local position = Position.new(gameWidth - 50, y)
 
-            CreateEnemy(spawnPosition, randomType)
+            local newId = CreateEnemy(type, position)
+            if type == EnemyType.Flying and newId ~= nil then
+                flyingPhases[newId] = {
+                    phase = (Random(0, 6283) / 1000.0),
+                    baseY = position.y,
+                    amplitude = Random(12, 28),
+                    freq = Random(1, 3)
+                }
+            end
         end
         enemySpawnTimer = 0
     end
@@ -81,19 +118,42 @@ function Process(dt)
     if enemyMoveTimer >= 0.2 then
         local genericEnemies = GetEnemiesByType(EnemyType.Generic)
         for _, enemy in ipairs(genericEnemies) do
-            local dy = Random(-2, 2)
-            MoveEnemy(enemy.id, -5, dy, EnemyType.Generic)
+            local dyf = Random(-2, 2)
+            MoveEnemy(enemy.id, toInt(-5), toInt(dyf), EnemyType.Generic)
         end
 
         local walkingEnemies = GetEnemiesByType(EnemyType.Walking)
         for _, enemy in ipairs(walkingEnemies) do
-            MoveEnemy(enemy.id, -5, 0, EnemyType.Walking)
+            MoveEnemy(enemy.id, toInt(-5), toInt(0), EnemyType.Walking)
         end
 
         local flyingEnemies = GetEnemiesByType(EnemyType.Flying)
+        local present = {}
         for _, enemy in ipairs(flyingEnemies) do
-            local dy = Random(-2, 2)
-            MoveEnemy(enemy.id, -5, dy, EnemyType.Flying)
+            present[enemy.id] = true
+
+            local info = flyingPhases[enemy.id]
+            if not info then
+                info = {
+                    phase = (Random(0, 6283) / 1000.0),
+                    baseY = enemy.position.y,
+                    amplitude = Random(12, 28),
+                    freq = Random(1, 3)
+                }
+                flyingPhases[enemy.id] = info
+            end
+
+            local targetY = info.baseY + info.amplitude * math.sin(info.phase + sinTime * info.freq)
+            local dy = targetY - enemy.position.y
+            local dx = -5
+
+            MoveEnemy(enemy.id, toInt(dx), toInt(dy), EnemyType.Flying)
+        end
+
+        for id, _ in pairs(flyingPhases) do
+            if not present[id] then
+                flyingPhases[id] = nil
+            end
         end
 
         enemyMoveTimer = 0

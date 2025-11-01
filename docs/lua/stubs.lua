@@ -2,6 +2,12 @@
 --- Place this file in your workspace and add it to the Lua language server library to get autocomplete and signature help.
 --- @meta
 
+--- Player data structure containing ID and position
+--- @class PlayerData
+--- @field id number The player's unique identifier
+--- @field position Position The player's current position
+PlayerData = {}
+
 --- Position represents a 2D coordinate in the game world
 --- @class Position
 --- @field x number The X coordinate
@@ -20,27 +26,29 @@ function Position.new(x, y) end
 --- @field position Position The entity's position in the game world
 Entity = {}
 
---- Enemy type enumeration
---- @enum EnemyType
-EnemyType = {
-    Generic = 3, -- Standard enemy
-    Walking = 4, -- Ground-based enemy
-    Flying = 5   -- Aerial enemy
-}
-
 --- Missile type enumeration
 --- @enum MissileType
 MissileType = {
     Player = 0, -- Player-fired missile
     Enemy = 1,  -- Enemy-fired missile
-    Force = 2   -- Force missile (higher damage)
+    Force = 2,  -- Force missile
+    Boss = 3,   -- Boss missile
+}
+
+--- Enemy type enumeration
+--- @enum EnemyType
+EnemyType = {
+    Generic = 4, -- Standard enemy
+    Walking = 5, -- Ground-based enemy
+    Flying = 6,  -- Aerial enemy
+    Boss = 7     -- Boss enemy
 }
 
 --- Item type enumeration
 --- @enum ItemType
 ItemType = {
-    Shield = 6, -- Shield power-up
-    Force = 7   -- Force power-up
+    Shield = 8, -- Shield power-up
+    Force = 9   -- Force power-up
 }
 
 --- Get all enemies of a specific type
@@ -48,15 +56,15 @@ ItemType = {
 --- @return Entity[] Array of enemy entities
 function GetEnemiesByType(type) end
 
---- Get all enemies in the game (all types combined)
+--- Get all enemies in the game
 --- @return Entity[] Array of all enemy entities
 function GetEnemies() end
 
 --- Create a new enemy at the specified position
+--- @param type EnemyType The type of enemy to create
 --- @param position Position Where to spawn the enemy
---- @param type? EnemyType The type of enemy to create (default: EnemyType.Generic)
 --- @return number The unique identifier of the created enemy
-function CreateEnemy(position, type) end
+function CreateEnemy(type, position) end
 
 --- Move an enemy by delta values
 --- @param id number The unique identifier of the enemy to move
@@ -75,35 +83,18 @@ function RemoveEnemy(id, type) end
 --- @return Entity[] Array of missile entities
 function GetMissilesByType(type) end
 
---- Get all player missiles
---- @return Entity[] Array of player missile entities
-function GetPlayerMissiles() end
-
---- Get all enemy missiles
---- @return Entity[] Array of enemy missile entities
-function GetEnemyMissiles() end
-
---- Create a player missile at the specified position
---- @param position Position Where to spawn the missile
---- @return number The unique identifier of the created missile
-function CreatePlayerMissile(position) end
-
---- Create an enemy missile at the specified position
---- @param position Position Where to spawn the missile
---- @return number The unique identifier of the created missile
-function CreateEnemyMissile(position) end
-
 --- Create a missile of any type
 --- @param position Position Where to spawn the missile
 --- @param type MissileType The type of missile to create
 --- @return number The unique identifier of the created missile
-function CreateMissile(position, type) end
+function CreateMissile(type, position) end
 
---- Move an enemy missile by delta values
+--- Move missile by delta values
 --- @param id number The unique identifier of the missile to move
+--- @param type MissileType The type of missile
 --- @param dx number Delta X movement (negative = left, positive = right)
 --- @param dy number Delta Y movement (negative = up, positive = down)
-function MoveEnemyMissile(id, dx, dy) end
+function MoveMissile(id, type, dx, dy) end
 
 --- Remove a missile from the game
 --- @param id number The unique identifier of the missile to remove
@@ -145,6 +136,19 @@ function GetGameId() end
 --- Get the current number of players in the game
 --- @return number Number of active players (0-4)
 function GetPlayerCount() end
+
+--- Get all player IDs in the game
+--- @return number[] Array of player IDs
+function GetPlayerIds() end
+
+--- Get the position of a specific player by ID
+--- @param id number The unique identifier of the player
+--- @return Position|nil The player's position, or nil if player not found
+function GetPlayerPosition(id) end
+
+--- Get all players with their IDs and positions
+--- @return PlayerData[] Array of player data objects
+function GetPlayers() end
 
 --- Log a message to the server console
 --- @param message string The message to log

@@ -149,6 +149,8 @@ std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetMissiles(const Missi
             return _missiles.enemy;
         case Missile::Force:
             return _missiles.force;
+        case Missile::Boss:
+            return _missiles.boss;
         default:
             throw Exception::GenericError(std::format("Invalid missile type, got {}", Misc::Utils::GetEnumIndex(type)));
     }
@@ -165,22 +167,26 @@ std::optional<std::reference_wrapper<Entity>> Engine::Game::GetMissile(const std
     return std::nullopt;
 }
 
-std::uint32_t Engine::Game::CreateMissile(Position position, const Missile type)
+std::uint32_t Engine::Game::CreateMissile(const Missile type, const Position position)
 {
     Entity missile = { .position = position, .id = 0, .health = 0 };
 
     switch (type) {
         case Missile::Player:
-            missile = { position, Misc::Utils::GetNextId(std::format("game-{}-player-missile", _id)), 0 };
+            missile.id = Misc::Utils::GetNextId(std::format("game-{}-player-missile", _id));
             _missiles.player[missile.id] = missile;
             break;
         case Missile::Enemy:
-            missile = { position, Misc::Utils::GetNextId(std::format("game-{}-enemy-missile", _id)), 0 };
+            missile.id = Misc::Utils::GetNextId(std::format("game-{}-enemy-missile", _id));
             _missiles.enemy[missile.id] = missile;
             break;
         case Missile::Force:
-            missile = { position, Misc::Utils::GetNextId(std::format("game-{}-player-force-missile", _id)), 0 };
+            missile.id = Misc::Utils::GetNextId(std::format("game-{}-force-missile", _id));
             _missiles.force[missile.id] = missile;
+            break;
+        case Missile::Boss:
+            missile.id = Misc::Utils::GetNextId(std::format("game-{}-boss-missile", _id));
+            _missiles.boss[missile.id] = missile;
             break;
         default:
             throw Exception::GenericError(std::format("Invalid missile type, got {}", Misc::Utils::GetEnumIndex(type)));
@@ -193,9 +199,9 @@ std::uint32_t Engine::Game::CreateMissile(Position position, const Missile type)
     return missile.id;
 }
 
-void Engine::Game::MoveMissile(std::uint32_t id, const std::int16_t dx, const std::int16_t dy)
+void Engine::Game::MoveMissile(const std::uint32_t id, const Missile type, const std::int16_t dx, const std::int16_t dy)
 {
-    std::optional<std::reference_wrapper<Entity>> opt = GetMissile(id, Missile::Enemy);
+    std::optional<std::reference_wrapper<Entity>> opt = GetMissile(id, type);
 
     if (opt.has_value()) {
         Entity& missile = opt->get();
@@ -204,20 +210,20 @@ void Engine::Game::MoveMissile(std::uint32_t id, const std::int16_t dx, const st
         std::int32_t newY = static_cast<std::int32_t>(missile.position.y) + dy;
 
         if (newX < 0) {
-            RemoveMissile(id, Missile::Enemy);
+            RemoveMissile(id, type);
+        } else if (newY < 0) {
+            RemoveMissile(id, type);
+        } else if (newY > WINDOW_HEIGHT) {
+            RemoveMissile(id, type);
         } else {
             if (newX > WINDOW_WIDTH) {
                 newX = WINDOW_WIDTH;
-            } else if (newY < 0) {
-                newY = 0;
-            } else if (newY > WINDOW_HEIGHT) {
-                newY = WINDOW_HEIGHT;
             }
 
             missile.position.x = static_cast<std::uint16_t>(newX);
             missile.position.y = static_cast<std::uint16_t>(newY);
 
-            QueuePosition(missile.id, Misc::Utils::GetEnumIndex(Missile::Enemy), missile.position);
+            QueuePosition(missile.id, Misc::Utils::GetEnumIndex(type), missile.position);
         }
     }
 }
@@ -474,6 +480,8 @@ std::unordered_map<std::uint32_t, Entity>& Engine::Game::GetEnemies(const Enemy 
             return _enemies.walking;
         case Enemy::Flying:
             return _enemies.flying;
+        case Enemy::Boss:
+            return _enemies.boss;
         default:
             throw Exception::GenericError(std::format("Invalid enemy type, got {}", Misc::Utils::GetEnumIndex(type)));
     }
@@ -490,19 +498,34 @@ std::optional<std::reference_wrapper<Entity>> Engine::Game::GetEnemy(const std::
     return std::nullopt;
 }
 
-std::uint32_t Engine::Game::CreateEnemy(const Position position, const Enemy type)
+std::uint32_t Engine::Game::CreateEnemy(const Enemy type, const Position position)
 {
-    std::unordered_map<std::uint32_t, Entity>& enemies = GetEnemies(type);
-    std::size_t size = _enemies.generic.size() + _enemies.walking.size() + _enemies.flying.size();
+    Entity enemy = { .position = position, .id = 0, .health = 100 };
 
-    if (size >= MAX_ENEMIES_PER_GAME) {
-        throw Exception::GenericError(std::format("Maximum enemies reached in game {}", MAX_ENEMIES_PER_GAME, _id));
+    switch (type) {
+        case Enemy::Generic:
+            enemy.id = Misc::Utils::GetNextId(std::format("game-{}-generic-enemy", _id));
+            enemy.health = GENERIC_ENEMY_HEALTH;
+            _enemies.generic[enemy.id] = enemy;
+            break;
+        case Enemy::Walking:
+            enemy.id = Misc::Utils::GetNextId(std::format("game-{}-walking-enemy", _id));
+            enemy.health = WALKING_ENEMY_HEALTH;
+            _enemies.walking[enemy.id] = enemy;
+            break;
+        case Enemy::Flying:
+            enemy.id = Misc::Utils::GetNextId(std::format("game-{}-flying-enemy", _id));
+            enemy.health = FLYING_ENEMY_HEALTH;
+            _enemies.flying[enemy.id] = enemy;
+            break;
+        case Enemy::Boss:
+            enemy.id = Misc::Utils::GetNextId(std::format("game-{}-boss-enemy", _id));
+            enemy.health = BOSS_ENEMY_HEALTH;
+            _enemies.boss[enemy.id] = enemy;
+            break;
+        default:
+            throw Exception::GenericError(std::format("Invalid enemy type, got {}", Misc::Utils::GetEnumIndex(type)));
     }
-
-    Entity enemy = { .position = position, .id = Misc::Utils::GetNextId(std::format("game-{}-enemy", _id)), .health = 100 };
-
-    enemies[enemy.id] = enemy;
-
     for (const std::uint32_t& current : _ids) {
         if (current != 0) {
             Action::Dispatcher::SendMessage(ActionType::SPW, current, std::make_tuple(enemy.id, Misc::Utils::GetEnumIndex(type), enemy.position));
@@ -583,6 +606,9 @@ void Engine::Game::ApplyCollisions(const Collision::Result& result)
     for (const auto& [enemyId, damage] : result.damaged.flying) {
         DamageEnemy(enemyId, Enemy::Flying, damage);
     }
+    for (const auto& [enemyId, damage] : result.damaged.boss) {
+        DamageEnemy(enemyId, Enemy::Boss, damage);
+    }
     for (const std::uint32_t id : result.enemies.generic) {
         RemoveEnemy(id, Enemy::Generic);
     }
@@ -600,6 +626,9 @@ void Engine::Game::ApplyCollisions(const Collision::Result& result)
     }
     for (const std::uint32_t id : result.missiles.enemy) {
         RemoveMissile(id, Missile::Enemy);
+    }
+    for (const std::uint32_t id : result.missiles.boss) {
+        RemoveMissile(id, Missile::Boss);
     }
     for (const auto& [shieldId, playerId] : result.shields) {
         RemoveItem(shieldId, Item::Shield);

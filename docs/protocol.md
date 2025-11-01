@@ -26,9 +26,9 @@ Here is the list of actions:
 | 0x0A        | [CRE](actions/CRE.md) | TCP      | Yes            |
 | 0x0B        | [STR](actions/STR.md) | TCP      | Yes            |
 | 0x0C        | [STP](actions/STP.md) | TCP      | Yes            |
-| 0x0D        | [SHD](actions/SHD.md) | UDP      | Yes            |
+| 0x0D        | [STS](actions/STS.md) | UDP      | Yes            |
 | 0x0E        | [NXT](actions/NXT.md) | TCP      | Yes            |
-| 0x0F        | [STS](actions/STS.md) | UDP      | Yes            |
+| 0x0F        | [GOD](actions/GOD.md) | TCP      | Yes            |
 
 ## World dimensions
 

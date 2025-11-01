@@ -106,11 +106,11 @@ namespace Engine
             /**
              * @brief Create a new player missile in the game
              *
-             * @param position The initial position of the player missile
              * @param type The type of missile
+             * @param position The initial position of the player missile
              * @return The unique identifier of the created player missile
              */
-            std::uint32_t CreateMissile(Position position, const Missile type);
+            std::uint32_t CreateMissile(const Missile type, const Position position);
 
             /**
              * @brief Move enemy missile in the game
@@ -119,7 +119,7 @@ namespace Engine
              * @param dx The change in X position
              * @param dy The change in Y position
              */
-            void MoveMissile(std::uint32_t id, const std::int16_t dx, const std::int16_t dy);
+            void MoveMissile(const std::uint32_t id, const Missile type, const std::int16_t dx, const std::int16_t dy);
 
             /**
              * @brief Move player missile in the game
@@ -201,11 +201,11 @@ namespace Engine
             /**
              * @brief Create a new enemy in the game at a specific position
              *
-             * @param position The position where the enemy should spawn
              * @param type The type of enemy to create
+             * @param position The position where the enemy should spawn
              * @return The unique identifier of the created enemy
              */
-            std::uint32_t CreateEnemy(const Position position, const Enemy type);
+            std::uint32_t CreateEnemy(const Enemy type, const Position position);
 
             /**
              * @brief Move an enemy by its identifier

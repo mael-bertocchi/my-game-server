@@ -34,9 +34,9 @@ void Action::List::SHT::ReceiveMessage(const std::uint32_t id, const std::vector
 
         const Position& position = player->GetPosition();
         if (player->IsStatisticActive(Statistic::Force)) {
-            game->CreateMissile(position, Missile::Force);
+            game->CreateMissile(Missile::Force, position);
         } else {
-            game->CreateMissile(position, Missile::Player);
+            game->CreateMissile(Missile::Player, position);
         }
     } catch (const Exception::GenericError& ex) {
         Misc::Logger::Log(std::format("Failed to process SHT for player {}: {}", id, ex.what()), Misc::Logger::LogLevel::Critical);

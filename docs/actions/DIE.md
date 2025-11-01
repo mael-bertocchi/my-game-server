@@ -9,11 +9,14 @@ Entity values:
 | Player Missile | 0x00  | A missile fired by a player  |
 | Enemy Missile  | 0x01  | A missile fired by an enemy  |
 | Force Missile  | 0x02  | A missile with special force |
-| Generic Enemy  | 0x03  | The default enemy type       |
-| Walking Enemy  | 0x04  | An enemy that walks          |
-| Flying Enemy   | 0x05  | An enemy that flies          |
-| Shield         | 0x06  | A shield item                |
-| Force          | 0x07  | A force item                 |
+| Boss Missile   | 0x03  | A missile fired by a boss    |
+| Generic Enemy  | 0x04  | The default enemy type       |
+| Walking Enemy  | 0x05  | An enemy that walks          |
+| Flying Enemy   | 0x06  | An enemy that flies          |
+| Boss Enemy     | 0x07  | A boss enemy                 |
+| Shield         | 0x08  | A shield item                |
+| Force          | 0x09  | A force item                 |
+| Player         | 0x0A  | The player entity            |
 
 Message structure:
 

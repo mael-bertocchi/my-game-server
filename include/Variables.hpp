@@ -47,26 +47,32 @@ constexpr std::uint8_t GAME_PROCESS_INTERVAL_MS = 10; /*!< Interval between enti
 
 constexpr std::uint8_t ENTITY_MOVE_INTERVAL_MS = 100; /*!< Interval between entity movements */
 
-constexpr std::uint8_t MAX_ENEMIES_PER_GAME = 10; /*!< Maximum number of enemies allowed on screen */
+constexpr std::uint8_t MAX_SPAWNABLE_ENTITY_VALUE = 9; /*!< Maximum value for spawnable entity types */
 
-constexpr std::uint8_t MAX_SPAWNABLE_ENTITY_VALUE = 7; /*!< Maximum value for spawnable entity types */
-
-constexpr std::uint8_t MAX_ENTITY_VALUE = 8; /*!< Maximum value for entity types */
-
-constexpr std::uint16_t WINDOW_HEIGHT = 600; /*!< Height of the game area */
-
-constexpr std::uint16_t WINDOW_WIDTH = 900; /*!< Width of the game area */
+constexpr std::uint8_t MAX_ENTITY_VALUE = 10; /*!< Maximum value for entity types */
 
 constexpr std::uint8_t MAX_PLAYER_PER_GAMES = 4; /*!< Maximum number of players allowed in a single game */
 
 constexpr std::uint8_t MIN_PLAYER_PER_GAMES = 2; /*!< Minimum number of players required to start a game */
 
+constexpr std::uint16_t WINDOW_HEIGHT = 600; /*!< Height of the game area */
+
+constexpr std::uint16_t WINDOW_WIDTH = 900; /*!< Width of the game area */
+
+/*!< Entity configuration */
+
+constexpr std::uint16_t BOSS_ENEMY_HEALTH = 750; /*!< Health of boss enemies */
+
+constexpr std::uint8_t GENERIC_ENEMY_HEALTH = 80; /*!< Health of generic enemies */
+
+constexpr std::uint8_t WALKING_ENEMY_HEALTH = 120; /*!< Health of walking enemies */
+
+constexpr std::uint8_t FLYING_ENEMY_HEALTH = 40; /*!< Health of flying enemies */
+
+constexpr std::uint8_t PLAYER_MISSILE_DAMAGE = 20; /*!< Damage dealt by player missiles */
+
+constexpr std::uint8_t FORCE_MISSILE_DAMAGE = 40; /*!< Damage dealt by player missiles */
+
 constexpr std::uint8_t MISSILE_MOVE_SPEED = 40; /*!< Speed at which bullets move */
 
 constexpr std::uint8_t PLAYER_MOVE_SPEED = 4; /*!< Speed at which players move */
-
-constexpr std::int32_t PLAYER_MISSILE_DAMAGE = 20; /*!< Damage dealt by player missiles */
-
-constexpr std::int32_t ENEMY_MISSILE_DAMAGE = 100; /*!< Damage dealt by enemy missiles */
-
-constexpr std::int32_t FORCE_MISSILE_DAMAGE = 40; /*!< Damage dealt by player missiles */

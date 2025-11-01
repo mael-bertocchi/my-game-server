@@ -53,12 +53,14 @@ void Engine::Wave::RegisterLuaBindings()
     _state.new_enum<Enemy>("EnemyType", {
         {"Generic", Enemy::Generic},
         {"Walking", Enemy::Walking},
-        {"Flying", Enemy::Flying}
+        {"Flying", Enemy::Flying},
+        {"Boss", Enemy::Boss}
     });
 
     _state.new_enum<Missile>("MissileType", {
         {"Player", Missile::Player},
-        {"Enemy", Missile::Enemy}
+        {"Enemy", Missile::Enemy},
+        {"Boss", Missile::Boss}
     });
 
     _state.new_enum<Item>("ItemType", {
@@ -103,16 +105,21 @@ void Engine::Wave::RegisterLuaBindings()
             for (const auto& [id, entity] : flying) {
                 result[i++] = entity;
             }
+
+            const auto& boss = game->GetEnemies(Enemy::Boss);
+            for (const auto& [id, entity] : boss) {
+                result[i++] = entity;
+            }
             return result;
         }
         return _state.create_table();
     });
 
-    _state.set_function("CreateEnemy", [this](Position pos, sol::optional<Enemy> type) -> std::uint32_t {
+    _state.set_function("CreateEnemy", [this](Enemy type, Position pos) -> std::uint32_t {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            return game->CreateEnemy(pos, type.value_or(Enemy::Generic));
+            return game->CreateEnemy(type, pos);
         }
         return 0;
     });
@@ -149,70 +156,20 @@ void Engine::Wave::RegisterLuaBindings()
         return _state.create_table();
     });
 
-    _state.set_function("GetPlayerMissiles", [this]() -> sol::table {
+    _state.set_function("CreateMissile", [this](Missile type, Position pos) -> std::uint32_t {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            const auto& missiles = game->GetMissiles(Missile::Player);
-            sol::table result = _state.create_table();
-            std::size_t i = 1;
-
-            for (const auto& [id, entity] : missiles) {
-                result[i++] = entity;
-            }
-            return result;
-        }
-        return _state.create_table();
-    });
-
-    _state.set_function("GetEnemyMissiles", [this]() -> sol::table {
-        auto ptr = _game.lock();
-        if (ptr) {
-            const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            const auto& missiles = game->GetMissiles(Missile::Enemy);
-            sol::table result = _state.create_table();
-            std::size_t i = 1;
-
-            for (const auto& [id, entity] : missiles) {
-                result[i++] = entity;
-            }
-            return result;
-        }
-        return _state.create_table();
-    });
-
-    _state.set_function("CreatePlayerMissile", [this](Position pos) -> std::uint32_t {
-        auto ptr = _game.lock();
-        if (ptr) {
-            const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            return game->CreateMissile(pos, Missile::Player);
+            return game->CreateMissile(type, pos);
         }
         return 0;
     });
 
-    _state.set_function("CreateEnemyMissile", [this](Position pos) -> std::uint32_t {
+    _state.set_function("MoveMissile", [this](std::uint32_t id, Missile type, std::int16_t dx, std::int16_t dy) {
         auto ptr = _game.lock();
         if (ptr) {
             const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            return game->CreateMissile(pos, Missile::Enemy);
-        }
-        return 0;
-    });
-
-    _state.set_function("CreateMissile", [this](Position pos, Missile type) -> std::uint32_t {
-        auto ptr = _game.lock();
-        if (ptr) {
-            const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            return game->CreateMissile(pos, type);
-        }
-        return 0;
-    });
-
-    _state.set_function("MoveEnemyMissile", [this](std::uint32_t id, std::int16_t dx, std::int16_t dy) {
-        auto ptr = _game.lock();
-        if (ptr) {
-            const auto& game = std::static_pointer_cast<Engine::Game>(ptr);
-            game->MoveMissile(id, dx, dy);
+            game->MoveMissile(id, type, dx, dy);
         }
     });
 
@@ -350,8 +307,8 @@ void Engine::Wave::RegisterLuaBindings()
         return _state.create_table();
     });
 
-    _state.set_function("Log", [](const std::string& message) {
-        Misc::Logger::Log(message);
+    _state.set_function("Log", [this](const std::string& message) {
+        Misc::Logger::Log(std::format("[Game - {}] {}", _id, message));
     });
 
     _state.set_function("Random", [](std::int32_t min, std::int32_t max) -> std::int32_t {
@@ -366,22 +323,22 @@ Engine::Wave::Result Engine::Wave::Process(float deltaTime)
 
         if (!result.valid()) {
             sol::error err = result;
-            Misc::Logger::Log(std::format("Error in wave process function for game {}: {}", _id, err.what()), Misc::Logger::LogLevel::Critical);
+            Misc::Logger::Log(std::format("[Game - {}] Failed to process wave: {}", _id, err.what()), Misc::Logger::LogLevel::Critical);
             return SwitchToNextWave();
         }
         if (result.return_count() > 0) {
             sol::optional<bool> complete = result;
             if (complete.value_or(false)) {
-                Misc::Logger::Log(std::format("Wave completed for game {}, switching to next one", _id));
+                Misc::Logger::Log(std::format("[Game - {}] Wave completed", _id));
                 return SwitchToNextWave();
             }
         }
         return Result::Continue;
     } catch (const std::exception& ex) {
-        Misc::Logger::Log(std::format("Error while processing wave for game {}: {}", _id, ex.what()), Misc::Logger::LogLevel::Critical);
+        Misc::Logger::Log(std::format("[Game - {}] Failed to process wave: {}", _id, ex.what()), Misc::Logger::LogLevel::Critical);
         return SwitchToNextWave();
     } catch (...) {
-        Misc::Logger::Log(std::format("Unknown error while processing wave for game {}", _id), Misc::Logger::LogLevel::Critical);
+        Misc::Logger::Log(std::format("[Game - {}] Failed to process wave: Unknown error", _id), Misc::Logger::LogLevel::Critical);
         return SwitchToNextWave();
     }
 }
@@ -411,7 +368,7 @@ void Engine::Wave::LoadWaveCallback()
     if (func.has_value()) {
         _callback = func.value();
     } else {
-        throw Exception::GenericError("Wave script does not contain the Process function");
+        throw Exception::GenericError("Wave script does not contain the process function");
     }
 }
 
@@ -422,7 +379,7 @@ void Engine::Wave::InitializeWave()
         sol::protected_function_result result = func.value()();
         if (!result.valid()) {
             sol::error err = result;
-            throw Exception::GenericError(std::format("OnInit failed: {}", err.what()));
+            throw Exception::GenericError(std::format("Failed to initialize: {}", err.what()));
         }
     }
 }
@@ -440,15 +397,15 @@ Engine::Wave::Result Engine::Wave::SwitchToNextWave()
             LoadWaveCallback();
             InitializeWave();
 
-            Misc::Logger::Log(std::format("Game {} switched to wave {} with {}", _id, _next++, filepath.value()));
+            Misc::Logger::Log(std::format("[Game - {}] Switched to wave {}", _id, _next++));
             return Result::Next;
         } catch (const std::exception& ex) {
-            Misc::Logger::Log(std::format("Failed to load wave for game {} from file {}: {}", _id, filepath.value(), ex.what()), Misc::Logger::LogLevel::Critical);
+            Misc::Logger::Log(std::format("[Game - {}] Failed to load wave: {}", _id, ex.what()), Misc::Logger::LogLevel::Critical);
         } catch (...) {
-            Misc::Logger::Log(std::format("Failed to load wave for game {} from file {}: Unknown error", _id, filepath.value()), Misc::Logger::LogLevel::Critical);
+            Misc::Logger::Log(std::format("[Game - {}] Failed to load wave: Unknown error", _id), Misc::Logger::LogLevel::Critical);
         }
     } else {
-        Misc::Logger::Log(std::format("No more waves available for game {}", _id));
+        Misc::Logger::Log(std::format("[Game - {}] No more waves available", _id));
     }
     return Result::Stop;
 }

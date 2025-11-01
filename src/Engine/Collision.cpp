@@ -17,8 +17,10 @@ Engine::Collision::Result Engine::Collision::Check(const std::array<std::uint32_
     std::unordered_map<std::uint32_t, BoundingBox> genericEnemyBoxes = {};
     std::unordered_map<std::uint32_t, BoundingBox> walkingEnemyBoxes = {};
     std::unordered_map<std::uint32_t, BoundingBox> playerShieldBoxes = {};
+    std::unordered_map<std::uint32_t, BoundingBox> bossMissileBoxes = {};
     std::unordered_map<std::uint32_t, BoundingBox> flyingEnemyBoxes = {};
     std::unordered_map<std::uint32_t, BoundingBox> shieldItemBoxes = {};
+    std::unordered_map<std::uint32_t, BoundingBox> bossEnemyBoxes = {};
     std::unordered_map<std::uint32_t, BoundingBox> forceItemBoxes = {};
     std::unordered_map<std::uint32_t, BoundingBox> playerBoxes = {};
 
@@ -48,6 +50,10 @@ Engine::Collision::Result Engine::Collision::Check(const std::array<std::uint32_
         flyingEnemyBoxes[enemy.id] = CreateBoundingBox(enemy.position, 80, 44);
     }
 
+    for (const auto& [id, enemy] : enemies.boss) {
+        bossEnemyBoxes[enemy.id] = CreateBoundingBox(enemy.position, 300, 300);
+    }
+
     for (const auto& [id, missile] : missiles.player) {
         playerMissileBoxes[missile.id] = CreateBoundingBox(missile.position, 60, 20);
     }
@@ -58,6 +64,10 @@ Engine::Collision::Result Engine::Collision::Check(const std::array<std::uint32_
 
     for (const auto& [id, missile] : missiles.enemy) {
         enemyMissileBoxes[missile.id] = CreateBoundingBox(missile.position, 38, 30);
+    }
+
+    for (const auto& [id, missile] : missiles.boss) {
+        bossMissileBoxes[missile.id] = CreateBoundingBox(missile.position, 100, 40);
     }
 
     for (const auto& [id, shield] : items.shield) {
@@ -225,6 +235,114 @@ Engine::Collision::Result Engine::Collision::Check(const std::array<std::uint32_
             if (DoesCollide(emBox, playerBox)) {
                 result.missiles.enemy.insert(emId);
                 result.players.push_back(playerId);
+                break;
+            }
+        }
+    }
+
+    for (const auto& [bmId, bmBox] : bossMissileBoxes) {
+        if (result.missiles.boss.count(bmId)) {
+            continue;
+        }
+
+        for (const auto& [playerId, playerBox] : playerShieldBoxes) {
+            if (std::find(result.players.begin(), result.players.end(), playerId) != result.players.end()) {
+                continue;
+            }
+
+            if (DoesCollide(bmBox, playerBox)) {
+                result.missiles.boss.insert(bmId);
+                result.players.push_back(playerId);
+                break;
+            }
+        }
+    }
+
+    for (const auto& [pmId, pmBox] : playerMissileBoxes) {
+        if (result.missiles.player.count(pmId)) {
+            continue;
+        }
+
+        for (const auto& [bmId, bmBox] : bossMissileBoxes) {
+            if (result.missiles.boss.count(bmId)) {
+                continue;
+            }
+
+            if (DoesCollide(pmBox, bmBox)) {
+                result.missiles.player.insert(pmId);
+                result.missiles.boss.insert(bmId);
+                break;
+            }
+        }
+    }
+
+    for (const auto& [pfmId, pfmBox] : forceMissileBoxes) {
+        if (result.missiles.force.count(pfmId)) {
+            continue;
+        }
+
+        for (const auto& [bmId, bmBox] : bossMissileBoxes) {
+            if (result.missiles.boss.count(bmId)) {
+                continue;
+            }
+
+            if (DoesCollide(pfmBox, bmBox)) {
+                result.missiles.force.insert(pfmId);
+                result.missiles.boss.insert(bmId);
+                break;
+            }
+        }
+    }
+
+    for (const auto& [pmId, pmBox] : playerMissileBoxes) {
+        if (result.missiles.player.count(pmId)) {
+            continue;
+        }
+
+        for (const auto& [enemyId, enemyBox] : bossEnemyBoxes) {
+            if (result.damaged.boss.count(enemyId)) {
+                continue;
+            }
+
+            if (DoesCollide(pmBox, enemyBox)) {
+                result.missiles.player.insert(pmId);
+                result.damaged.boss[enemyId] = PLAYER_MISSILE_DAMAGE;
+                break;
+            }
+        }
+    }
+
+    for (const auto& [pfmId, pfmBox] : forceMissileBoxes) {
+        if (result.missiles.force.count(pfmId)) {
+            continue;
+        }
+
+        for (const auto& [enemyId, enemyBox] : bossEnemyBoxes) {
+            if (result.damaged.boss.count(enemyId)) {
+                continue;
+            }
+
+            if (DoesCollide(pfmBox, enemyBox)) {
+                result.missiles.force.insert(pfmId);
+                result.damaged.boss[enemyId] = FORCE_MISSILE_DAMAGE;
+                break;
+            }
+        }
+    }
+
+    for (const auto& [playerId, playerBox] : playerShieldBoxes) {
+        if (std::find(result.players.begin(), result.players.end(), playerId) != result.players.end()) {
+            continue;
+        }
+
+        for (const auto& [enemyId, enemyBox] : bossEnemyBoxes) {
+            if (result.enemies.boss.count(enemyId)) {
+                continue;
+            }
+
+            if (DoesCollide(playerBox, enemyBox)) {
+                result.players.push_back(playerId);
+                result.enemies.boss.insert(enemyId);
                 break;
             }
         }

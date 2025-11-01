@@ -81,7 +81,8 @@ enum class Direction : std::uint8_t {
 enum class Missile : std::uint8_t {
     Player = 0, /*!< Player missile */
     Enemy = 1, /*!< Enemy missile */
-    Force = 2 /*!< Player force missile */
+    Force = 2, /*!< Player force missile */
+    Boss = 3 /*!< Boss missile */
 };
 
 /**
@@ -89,9 +90,10 @@ enum class Missile : std::uint8_t {
  * @brief The different types of enemies in the game.
  */
 enum class Enemy : std::uint8_t {
-    Generic = 3, /*!< The default enemy */
-    Walking = 4, /*!< An enemy that walks on the ground */
-    Flying = 5 /*!< An enemy that flies on the air */
+    Generic = 4, /*!< The default enemy */
+    Walking = 5, /*!< An enemy that walks on the ground */
+    Flying = 6, /*!< An enemy that flies on the air */
+    Boss = 7 /*!< A powerful boss enemy */
 };
 
 /**
@@ -99,8 +101,8 @@ enum class Enemy : std::uint8_t {
  * @brief The different types of items in the game.
  */
 enum class Item : std::uint8_t {
-    Shield = 6, /*!< Shield item */
-    Force = 7 /*!< Force item */
+    Shield = 8, /*!< Shield item */
+    Force = 9 /*!< Force item */
 };
 
 /**
@@ -108,7 +110,7 @@ enum class Item : std::uint8_t {
  * @brief The different types of characters in the game.
  */
 enum class Character : std::uint8_t {
-    Player = 8 /*!< Player character */
+    Player = 10 /*!< Player character */
 };
 
 /**
@@ -129,6 +131,7 @@ struct Missiles {
     std::unordered_map<std::uint32_t, Entity> player; /*!< Player missile */
     std::unordered_map<std::uint32_t, Entity> enemy; /*!< Enemy missile */
     std::unordered_map<std::uint32_t, Entity> force; /*!< Player force missile */
+    std::unordered_map<std::uint32_t, Entity> boss; /*!< Boss missile */
 };
 
 /**
@@ -139,6 +142,7 @@ struct Enemies {
     std::unordered_map<std::uint32_t, Entity> generic; /*!< Generic enemy */
     std::unordered_map<std::uint32_t, Entity> walking; /*!< Enemy that walks on the ground */
     std::unordered_map<std::uint32_t, Entity> flying; /*!< Enemy that flies */
+    std::unordered_map<std::uint32_t, Entity> boss; /*!< Boss enemy */
 };
 
 /**
